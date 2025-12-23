@@ -168,23 +168,6 @@ Transform:
   - {fileID: 1401226675}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &428151708 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5754687252616961094, guid: 1892843aeb857e640b8ddf35c9f9719b, type: 3}
-  m_PrefabInstance: {fileID: 666661222}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &428151713
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 428151708}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6eee9733b16164043ae49e8153124dd6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &432496702
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -287,7 +270,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc507368888eab94cb02feb35ac32306, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sceneToLoad: scene 3
+  sceneToLoad: scene 2
   targetDoorID: 2
   thisDoorID: 1
   exitDirection: 1
@@ -383,7 +366,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc507368888eab94cb02feb35ac32306, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sceneToLoad: scene 2
+  sceneToLoad: scene 3
   targetDoorID: 1
   thisDoorID: 2
   exitDirection: 0
@@ -488,10 +471,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5754687252616961094, guid: 1892843aeb857e640b8ddf35c9f9719b, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 428151713}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1892843aeb857e640b8ddf35c9f9719b, type: 3}
 --- !u!4 &1315756598 stripped
 Transform:

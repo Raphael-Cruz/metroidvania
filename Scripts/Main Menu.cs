@@ -1,28 +1,74 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using UnityEngine.UI;
 
 public class MainMenu : MonoBehaviour
 {
-    // 1. ADD THIS LINE so the menu knows which fader to use
     [SerializeField] private SceneFader fader; 
+    [SerializeField] private string gameSceneName = "Scene 1";
 
-    [SerializeField] private string gameSceneName = "scene 1";
+    [Header("Continue Settings")]
+    [SerializeField] private Button continueButton;
+
+private void Start()
+{
+    // Direct check as a backup to the Singleton
+    string path = Application.persistentDataPath + "/savegame.dat";
+    
+    if (continueButton != null)
+    {
+        // This checks the physical disk directly, bypassing script timing issues
+        continueButton.interactable = System.IO.File.Exists(path);
+        
+        Debug.Log("Checking for save at: " + path + " | Found: " + continueButton.interactable);
+    }
+}
 
     public void StartGame()
     {
-        Debug.Log("Starting Game...");
-        
-        // 2. Change 'SceneFader' to 'fader' (the variable name)
-        // 3. REMOVE the SceneManager.LoadScene line from here. 
-        // The FadeOut script already handles loading the scene once it turns black!
-        StartCoroutine(fader.FadeOut(gameSceneName));
+        Debug.Log("Start Button was Clicked!");
+        if (fader != null) 
+        {
+            StartCoroutine(fader.FadeOut(gameSceneName));
+        }
+        else 
+        {
+            SceneManager.LoadScene(gameSceneName);
+        }
     }
 
-    public void OpenOptions()
+public void ContinueGame()
+{
+    Debug.Log("Continue Button Clicked!"); // 1. Did the click work?
+
+    if (SaveManager.instance != null)
     {
-        Debug.Log("Opening Options...");
+        GameData data = SaveManager.instance.LoadGame();
+        
+        if (data != null)
+        {
+            Debug.Log("Loaded Scene Name from file: " + data.lastSceneName); // 2. What's in the file?
+            
+            if (!string.IsNullOrEmpty(data.lastSceneName))
+            {
+                StartCoroutine(fader.FadeOut(data.lastSceneName));
+            }
+            else
+            {
+                Debug.LogError("Save file found, but lastSceneName is EMPTY!");
+            }
+        }
+        else
+        {
+            Debug.LogError("SaveManager failed to load GameData!");
+        }
     }
+    else
+    {
+        Debug.LogError("SaveManager.instance is NULL in the Main Menu!");
+    }
+}
 
     public void QuitGame()
     {

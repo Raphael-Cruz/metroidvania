@@ -1,33 +1,31 @@
 using UnityEngine;
 
-public class ParallaxScroller : MonoBehaviour
-{
-    public float speed = 0.5f;
+public class MenuParallax : MonoBehaviour
 
-    private Transform leftPart;
-    private Transform rightPart;
-    private float width;
+{
+    [Header("Settings")]
+    public float scrollSpeed; // Positive for left, Negative for right
+    
+    private float textureUnitSizeX;
+    private Vector3 startPos;
 
     void Start()
     {
-        // Children must be exactly 2 sprites
-        leftPart = transform.GetChild(0);
-        rightPart = transform.GetChild(1);
-
-        // Measure sprite width
-        SpriteRenderer sr = leftPart.GetComponent<SpriteRenderer>();
-        width = sr.bounds.size.x;
+        startPos = transform.position;
+        
+        // Get the width of the sprite
+        Sprite sprite = GetComponent<SpriteRenderer>().sprite;
+        Texture2D texture = sprite.texture;
+        textureUnitSizeX = texture.width / sprite.pixelsPerUnit;
+        
+        // Match the scale if you resized it in the editor
+        textureUnitSizeX *= transform.localScale.x;
     }
 
     void Update()
     {
-        // Move entire parent to the left
-        transform.position += Vector3.left * speed * Time.deltaTime;
-
-        // If left sprite is fully off-screen, shift both
-        if (transform.position.x <= -width)
-        {
-            transform.position += new Vector3(width, 0, 0);
-        }
+        // Move the layer
+        float newPos = Mathf.Repeat(Time.time * scrollSpeed, textureUnitSizeX);
+        transform.position = startPos + Vector3.right * -newPos;
     }
 }
