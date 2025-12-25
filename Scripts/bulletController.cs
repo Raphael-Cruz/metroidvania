@@ -6,12 +6,13 @@ public class bulletController : MonoBehaviour
 {
 
     public float bulletSpeed;
+    
     public Rigidbody2D rb2D;
 
     public Vector2 moveDir;
     public GameObject impactEffect;
 
-    public int damageAmount = 1;
+    public int damageAmount = 5;
 
     // Update is called once per frame
     void FixedUpdate()

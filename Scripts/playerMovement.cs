@@ -65,6 +65,10 @@ private float coyoteFallCounter;
     public bulletController shotToFire;
     public Transform shotPoint;
 
+[Header("Shooting the Missile")]
+    public MissileController shotMissile;
+    public Transform missileShotPoint;
+
     public bool canMove;
 
 
@@ -234,6 +238,8 @@ theRB.velocity = new Vector2(moveInput * speed, theRB.velocity.y);
         // -----------------------
         // SHOOTING
         // -----------------------
+        
+        
         if (Input.GetButtonDown("Fire1"))
         {
             bulletController newBullet = Instantiate(shotToFire, shotPoint.position, shotPoint.rotation);
@@ -241,6 +247,27 @@ theRB.velocity = new Vector2(moveInput * speed, theRB.velocity.y);
             anim.SetTrigger("shotFired");
         }
 
+        // -----------------------
+        // SHOOTING THE MISSILE
+        // -----------------------
+if (Input.GetButtonDown("Fire2"))
+{
+    // Ensure we don't shoot if the prefab is missing
+    if(shotMissile != null) 
+    {
+        float angle = facingDirection > 0 ? 0f : 180f;
+        Quaternion spawnRotation = Quaternion.Euler(0, 0, angle);
+
+        // Spawn the missile
+        MissileController newMissile = Instantiate(shotMissile, missileShotPoint.position, spawnRotation);
+        
+        // IMPORTANT: Prevent the missile from ever hitting the player
+        // This ignores collisions between the player's collider and the new missile
+        Physics2D.IgnoreCollision(newMissile.GetComponent<Collider2D>(), GetComponent<Collider2D>());
+
+        anim.SetTrigger("missileFired");
+    }
+}
       // -----------------------
 // ANIMATION PARAMETERS
 // -----------------------
