@@ -34,7 +34,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -45,7 +45,7 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 1
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
@@ -121,7 +121,133 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
-    sprites: []
+    sprites:
+    - serializedVersion: 2
+      name: Dec 23, 2025, 06_30_56 PM_0
+      rect:
+        serializedVersion: 2
+        x: 765
+        y: 512
+        width: 769
+        height: 512
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 91711915d759fd44983cf9805780b0b5
+      internalID: 884041320
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Dec 23, 2025, 06_30_56 PM_1
+      rect:
+        serializedVersion: 2
+        x: 768
+        y: 510
+        width: 563
+        height: 512
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1d30257451d9eb34bbd6737f94b47c1c
+      internalID: 464472446
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Dec 23, 2025, 06_30_56 PM_2
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 723
+        height: 512
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: adce081b9acb17c4683dafde9bcbc813
+      internalID: 1432268572
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Dec 23, 2025, 06_30_56 PM_3
+      rect:
+        serializedVersion: 2
+        x: 767
+        y: 0
+        width: 564
+        height: 512
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7fa8976cb0891014b88191429bebeca9
+      internalID: -791990730
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Dec 23, 2025, 06_30_56 PM_4
+      rect:
+        serializedVersion: 2
+        x: 363
+        y: 701
+        width: 242
+        height: 155
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7c5e418777f75b14dbbee2d3ecd5fb7a
+      internalID: -11328253
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Dec 23, 2025, 06_30_56 PM_5
+      rect:
+        serializedVersion: 2
+        x: 158
+        y: 523
+        width: 565
+        height: 455
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bea75ba3e05ed5c4bacea1f5f5500dc8
+      internalID: -1291379375
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -132,7 +258,13 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Dec 23, 2025, 06_30_56 PM_0: 884041320
+      Dec 23, 2025, 06_30_56 PM_1: 464472446
+      Dec 23, 2025, 06_30_56 PM_2: 1432268572
+      Dec 23, 2025, 06_30_56 PM_3: -791990730
+      Dec 23, 2025, 06_30_56 PM_4: -11328253
+      Dec 23, 2025, 06_30_56 PM_5: -1291379375
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
