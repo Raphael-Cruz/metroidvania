@@ -7,6 +7,7 @@ public class AbilityUnlock : MonoBehaviour
     public bool unlockDoubleJump;
     public bool unlockDash;
     public bool unlockSuperJump;
+    public bool unlockMissile;
 
     public GameObject pickUpEffect;
 
@@ -36,6 +37,9 @@ public class AbilityUnlock : MonoBehaviour
 
         if (unlockSuperJump)
             player.canSuperJump = true;
+
+        if (unlockMissile)
+            player.canMissile = true;
 
         // Spawn pickup effect
         if (pickUpEffect != null)

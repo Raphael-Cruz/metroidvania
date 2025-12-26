@@ -67,6 +67,8 @@ public class PlayerMovement : MonoBehaviour
     public MissileController shotMissile;
     public Transform missileShotPoint;
     private bool isMissileLocking;
+    
+    public bool canMissile;
 
     public bool canMove;
 
@@ -210,9 +212,9 @@ public class PlayerMovement : MonoBehaviour
             anim.SetTrigger("shotFired");
         }
 
-        if (Input.GetButtonDown("Fire2") && !isMissileLocking && shotMissile && isOnGround) 
+        if (Input.GetButtonDown("Fire2") && !isMissileLocking && shotMissile && isOnGround && abilities.canMissile) 
         {
-           
+            canMissile = true;
             StartCoroutine(ShootMissileRoutine());
         }
 
