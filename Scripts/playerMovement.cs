@@ -67,7 +67,7 @@ public class PlayerMovement : MonoBehaviour
     public MissileController shotMissile;
     public Transform missileShotPoint;
     private bool isMissileLocking;
-    
+    public SkillHUDManager hud;
     public bool canMissile;
 
     public bool canMove;
@@ -213,40 +213,46 @@ public class PlayerMovement : MonoBehaviour
         }
 
         if (Input.GetButtonDown("Fire2") && !isMissileLocking && shotMissile && isOnGround && abilities.canMissile) 
-        {
-            canMissile = true;
-            StartCoroutine(ShootMissileRoutine());
-        }
+{
+    // Check with the HUD if we have a missile to fire
+    if (hud.UseCurrentSkill()) 
+    {
+        StartCoroutine(ShootMissileRoutine());
+    }
+    else 
+    {
+        Debug.Log("Out of Missiles!");
+        
+    }
+}
 
         UpdateAnimator();
     }
 
     private IEnumerator ShootMissileRoutine()
-    {
-       
-        anim.SetBool("isFalling", false);
-        anim.SetBool("isRising", false);
-        anim.SetBool("isHighJump", false);
+{
+    anim.SetBool("isFalling", false);
+    anim.SetBool("isRising", false);
+    anim.SetBool("isHighJump", false);
+    anim.SetTrigger("missileFired");
 
- anim.SetTrigger( "missileFired");
+    FreezePlayer(0.6f);
 
-        FreezePlayer(0.6f);
+    isMissileLocking = true; 
+    float angle = facingDirection > 0 ? 0f : 180f;
+    Quaternion spawnRotation = Quaternion.Euler(0, 0, angle);
 
-        isMissileLocking = true; 
-        float angle = facingDirection > 0 ? 0f : 180f;
-        Quaternion spawnRotation = Quaternion.Euler(0, 0, angle);
+    // Spawn the missile
+    MissileController newMissile = Instantiate(shotMissile, missileShotPoint.position, spawnRotation);
+    
+    // Set the initial direction for the missile controller
+    newMissile.moveDir = new Vector2(facingDirection, 0);
 
-        MissileController newMissile = Instantiate(shotMissile, missileShotPoint.position, spawnRotation);
-        
-        Collider2D playerCol = visual.GetComponent<Collider2D>(); // 2DCollider is on sprite now
-        if(playerCol != null) Physics2D.IgnoreCollision(newMissile.GetComponent<Collider2D>(), playerCol);
+    Collider2D playerCol = visual.GetComponent<Collider2D>(); 
+    if(playerCol != null) Physics2D.IgnoreCollision(newMissile.GetComponent<Collider2D>(), playerCol);
 
-       
-        
-        yield return null; 
-        
-        
-    }
+    yield return null; 
+}
 
     private void DoJump()
     {
