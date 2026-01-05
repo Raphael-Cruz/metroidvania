@@ -363,7 +363,7 @@ Transform:
   m_GameObject: {fileID: 1757290392055822196}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 104.67432, y: -27.03383, z: -22.31249}
+  m_LocalPosition: {x: 104.67432, y: -26.73383, z: -22.312489}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -392,7 +392,7 @@ MonoBehaviour:
   m_Follow: {fileID: 8046567360936698419}
   m_Lens:
     FieldOfView: 60
-    OrthographicSize: 7
+    OrthographicSize: 10
     NearClipPlane: 0.3
     FarClipPlane: 1000
     Dutch: 0
@@ -424,7 +424,6 @@ MonoBehaviour:
   m_BoundingShape2D: {fileID: 6603457414071130158}
   m_Damping: 0.5
   m_MaxWindowSize: -1
-  m_Padding: 0
 --- !u!1 &2963793605647415333
 GameObject:
   m_ObjectHideFlags: 0
@@ -489,7 +488,7 @@ Transform:
   m_GameObject: {fileID: 3477037037413731838}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 104.62566, y: -25.68208, z: -22.31249}
+  m_LocalPosition: {x: 104.63648, y: -25.68196, z: -22.312489}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -530,7 +529,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 7
+  orthographic size: 10
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -626,9 +625,9 @@ MonoBehaviour:
   m_RequiresColorTexture: 0
   m_Version: 2
   m_TaaSettings:
-    m_Quality: 3
-    m_FrameInfluence: 0.1
-    m_JitterScale: 1
-    m_MipBias: 0
-    m_VarianceClampScale: 0.9
-    m_ContrastAdaptiveSharpening: 0
+    quality: 3
+    frameInfluence: 0.1
+    jitterScale: 1
+    mipBias: 0
+    varianceClampScale: 0.9
+    contrastAdaptiveSharpening: 0

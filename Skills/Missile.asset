@@ -15,4 +15,4 @@ MonoBehaviour:
   skillName: Missile
   icon: {fileID: 21300000, guid: f038c5ade8484c94aac67a411491f908, type: 3}
   maxQuantity: 5
-  currentQuantity: 3
+  currentQuantity: 2

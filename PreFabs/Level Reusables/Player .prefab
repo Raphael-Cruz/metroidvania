@@ -106,6 +106,8 @@ MonoBehaviour:
   shotPoint: {fileID: 7272449490664046455}
   shotMissile: {fileID: 9009748656477397880, guid: 1ad12c49dcb477e4ba9f65ff0fcdaaeb, type: 3}
   missileShotPoint: {fileID: 8020396651400027483}
+  hud: {fileID: 0}
+  canMissile: 0
   canMove: 0
 --- !u!114 &2813491396325381055
 MonoBehaviour:
@@ -123,6 +125,7 @@ MonoBehaviour:
   canDash: 0
   canSuperJump: 1
   canHook: 1
+  canMissile: 0
 --- !u!114 &6663576045519906066
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -244,9 +247,9 @@ GameObject:
   - component: {fileID: 4294551146460876712}
   - component: {fileID: 8215712327627742499}
   - component: {fileID: 2348668810529840930}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Sprite
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
