@@ -120,6 +120,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        if (!InGameMenuController.isGamePaused) 
+    {
         HandleGrounding();
 
         if (!canMove) return;
@@ -227,6 +229,7 @@ public class PlayerMovement : MonoBehaviour
 }
 
         UpdateAnimator();
+    }
     }
 
     private IEnumerator ShootMissileRoutine()
