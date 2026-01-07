@@ -17,8 +17,7 @@ MonoBehaviour:
   description: 'An ancient relic forged from collapsed star-metal and rune-etched
     machinery.
 
-
-    When cast, the Gravitational Hook releases a focused gravity
-    well that latches onto anchors, bending space itself to pull the wielder forward.'
+    When cast, releases a focused gravity well that latches onto
+    anchors, bending space itself to pull the wielder forward.'
   conceptArt: {fileID: 21300000, guid: a69669d0a5d24f0449b9f79dacdb9cd1, type: 3}
   isCollected: 1

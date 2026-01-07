@@ -16,3 +16,5 @@ MonoBehaviour:
   icon: {fileID: 21300000, guid: f038c5ade8484c94aac67a411491f908, type: 3}
   maxQuantity: 5
   currentQuantity: 5
+  conceptArt: {fileID: 21300000, guid: f038c5ade8484c94aac67a411491f908, type: 3}
+  isCollected: 1

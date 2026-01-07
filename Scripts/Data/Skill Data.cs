@@ -7,4 +7,6 @@ public class SkillData : ScriptableObject
     public Sprite icon;
     public int maxQuantity;
     public int currentQuantity;
+        public Sprite conceptArt;
+    public bool isCollected;
 }
