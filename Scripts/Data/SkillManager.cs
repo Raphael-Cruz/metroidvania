@@ -17,10 +17,17 @@ public class SkillManager : MonoBehaviour
 
 private void OnEnable()
 {
-    RefreshGrid();
+   
+ if (SkillDisplayImage != null)
+        {
+            SkillDisplayImage.sprite = null;
+            SkillDisplayImage.color = new Color(0, 0, 0, 0.6f); 
+        }
 
-    // Auto-select the first collected skill so the screen isn't empty
+
+    // Auto-select the first collected skill 
     SkillSlot[] allSlots = gridParent.GetComponentsInChildren<SkillSlot>();
+
     foreach (var slot in allSlots)
     {
         if (slot.currentSkill != null && slot.currentSkill.isCollected)
@@ -29,28 +36,28 @@ private void OnEnable()
             break; 
         }
     }
+     RefreshGrid();
 }
 
-    public void RefreshGrid()
+public void RefreshGrid()
+{
+  // if (gridParent == null) return;
+
+    SkillSlot[] allSlots = gridParent.GetComponentsInChildren<SkillSlot>(true);
+
+    for (int i = 0; i < allSlots.Length; i++)
     {
-        if (gridParent == null) return;
+        allSlots[i].conceptArtDisplay = SkillDisplayImage;
 
-        SkillSlot[] allSlots = gridParent.GetComponentsInChildren<SkillSlot>(true);
-
-        for (int i = 0; i < allSlots.Length; i++)
+        if (i < allSkills.Count && allSkills[i] != null)
         {
-            // Pass the UI references to every slot
-           
-            allSlots[i].conceptArtDisplay = SkillDisplayImage;
+            allSlots[i].SetupSlot(allSkills[i]);
 
-            if (i < allSkills.Count && allSkills[i] != null)
-            {
-                allSlots[i].SetupSlot(allSkills[i]);
-            }
-            else
-            {
-                allSlots[i].SetAsEmpty();
-            }
+        }
+        else
+        {
+            allSlots[i].SetAsEmpty();
         }
     }
+}
 }
