@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 
+
 public class PlayerMovement : MonoBehaviour
 {
     public float FacingDirectionX => visual.localScale.x;
@@ -81,6 +82,13 @@ public Vector2 hangingOffset; // Manual adjustment to align hands to pixels
 
 private bool isOnEdge;
 private bool isHanging;
+
+public static PlayerMovement instance;
+
+ private void Awake()
+    {
+        instance = this;
+    }
 
     private void Start()
     {
@@ -423,12 +431,14 @@ private void ExitHanging()
 
 private void UpdateAnimator()
 {
+   
+    if (!canMove) return; 
+
     anim.SetBool("isOnGround", isOnGround);
     anim.SetBool("isRising", theRB.velocity.y > 1.5f);
     anim.SetBool("isHighJump", theRB.velocity.y > jumpForce * 1.5f);
     anim.SetFloat("speed", Mathf.Abs(theRB.velocity.x));
 
-   
     bool shouldFall = !isMissileLocking && theRB.velocity.y < -0.1f && coyoteFallCounter <= 0f;
     anim.SetBool("isFalling", shouldFall);
 }
