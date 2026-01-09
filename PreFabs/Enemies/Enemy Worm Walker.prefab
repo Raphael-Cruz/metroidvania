@@ -25,7 +25,7 @@ Transform:
   m_GameObject: {fileID: 2245517324785043915}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -14.88, y: 1.2, z: 0}
+  m_LocalPosition: {x: -13.77, y: 1.53, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -56,7 +56,7 @@ Transform:
   m_GameObject: {fileID: 5858890632830807054}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -19.16, y: 0.13, z: 0}
+  m_LocalPosition: {x: -18.64, y: 0.17, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -166,6 +166,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   totalhealth: 3
   deathEffect: {fileID: 6784360586612607014, guid: 8a3e0c628e31e6a4b972bbc47d782e36, type: 3}
+  enemyID: 
+  isPermanentEnemy: 0
 --- !u!114 &5988289388462631924
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -194,8 +196,8 @@ CapsuleCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
+    m_Bits: 4294967295
+  m_LayerOverridePriority: 1
   m_ForceSendLayers:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -211,8 +213,8 @@ CapsuleCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.5349045, y: 0.6519103}
-  m_Size: {x: 1.569809, y: 3.8416586}
+  m_Offset: {x: 0.8353119, y: 0.6247158}
+  m_Size: {x: 0.9984436, y: 3.8960476}
   m_Direction: 0
 --- !u!1 &6402994984011693740
 GameObject:
@@ -270,7 +272,7 @@ Transform:
   m_GameObject: {fileID: 7711820745290992824}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.32, z: 0}
+  m_LocalPosition: {x: -1.15, y: 0.18, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -356,7 +358,7 @@ SpriteRenderer:
   m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: c8fb36c9573aec04bb0fe4eac28ec680, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_FlipX: 0
+  m_FlipX: 1
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 3, y: 2}

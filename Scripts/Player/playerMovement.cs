@@ -89,6 +89,7 @@ public static PlayerMovement instance;
     {
         instance = this;
     }
+    
 
     private void Start()
     {

@@ -16,6 +16,7 @@ public class HealthManager : MonoBehaviour
 
     [HideInInspector] 
     public HealthBarFlashing currentUIFlash;
+    public bool isInvulnerable; 
 
     private void Awake()
     {
@@ -37,6 +38,13 @@ public class HealthManager : MonoBehaviour
 
     public void DamagePlayer(int amount)
     {
+     
+    if (isInvulnerable) 
+    {
+        Debug.Log("Shield absorbed the hit!");
+        return; 
+    }
+    
         currentHealth -= amount;
         currentHealth = Mathf.Clamp(currentHealth, 0, maxHealth);
 

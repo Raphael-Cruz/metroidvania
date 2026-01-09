@@ -1,38 +1,41 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class bulletController : MonoBehaviour
 {
-
-    public float bulletSpeed;
-    
+    public float bulletSpeed = 10f;
     public Rigidbody2D rb2D;
-
     public Vector2 moveDir;
     public GameObject impactEffect;
-
     public int damageAmount = 5;
 
-    // Update is called once per frame
-    void FixedUpdate()
+    private void Awake()
+    {
+        if (rb2D == null)
+            rb2D = GetComponent<Rigidbody2D>();
+    }
+
+    private void FixedUpdate()
     {
         rb2D.velocity = moveDir * bulletSpeed;
     }
 
-    void OnTriggerEnter2D(Collider2D other)
+    private void OnTriggerEnter2D(Collider2D other)
     {
-        if(other.CompareTag("Enemy")) //another way to write this: if (other.tag == "enemy") bus is less efficient.
+        if (other.CompareTag("Enemy"))
         {
-            other.GetComponent<EnemyHealthController>().DamageEnemy(damageAmount);    
+            EnemyHealthController enemy =
+                other.GetComponent<EnemyHealthController>() ??
+                other.GetComponentInParent<EnemyHealthController>();
+
+            if (enemy != null)
+                enemy.DamageEnemy(damageAmount);
         }
 
         if (impactEffect != null)
-        {
-        Instantiate(impactEffect, transform.position, Quaternion.identity);
+            Instantiate(impactEffect, transform.position, Quaternion.identity);
 
-       
-    } Destroy(gameObject);}
+        Destroy(gameObject);
+    }
 
     private void OnBecameInvisible()
     {

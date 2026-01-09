@@ -27,6 +27,10 @@ public class RoomTransitionManager : MonoBehaviour
 
     public void TransitionToRoom(string sceneName, string targetDoorID)
     {
+        if (ShieldController.instance != null)
+{
+    ShieldController.instance.gameObject.SetActive(false);
+}
         StartCoroutine(TransitionRoutine(sceneName, targetDoorID));
     }
 
