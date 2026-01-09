@@ -1,63 +1,74 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI; 
-using TMPro;
-
+using UnityEngine.UI;
 
 public class SkillManager : MonoBehaviour
 {
-
     [Header("UI References")]
     public Transform gridParent;
-    public Image SkillDisplayImage; 
+    public Image skillDisplayImage;
 
-    [Header("Data")]
+    [Header("Skill Catalog (Assign Once)")]
     public List<SkillData> allSkills = new List<SkillData>();
 
-private void OnEnable()
-{
-   
- if (SkillDisplayImage != null)
-        {
-            SkillDisplayImage.sprite = null;
-            SkillDisplayImage.color = new Color(0, 0, 0, 0.6f); 
-        }
-
-
-    // Auto-select the first collected skill 
-    SkillSlot[] allSlots = gridParent.GetComponentsInChildren<SkillSlot>();
-
-    foreach (var slot in allSlots)
+    private void OnEnable()
     {
-        if (slot.currentSkill != null && slot.currentSkill.isCollected)
+        RebuildFromWorldState();
+        RefreshGrid();
+        AutoSelectFirstCollectedSkill();
+    }
+
+    // 🔹 Pulls unlock info from WorldState
+    void RebuildFromWorldState()
+    {
+        foreach (SkillData skill in allSkills)
         {
-            slot.OnSelectSkill(); // Show this skill immediately
-            break; 
+            skill.ResetRuntimeData();
+
+            if (WorldState.UnlockedSkills.Contains(skill.skillID))
+            {
+                skill.isCollected = true;
+                skill.currentQuantity = skill.maxQuantity;
+            }
         }
     }
-     RefreshGrid();
-}
 
-public void RefreshGrid()
-{
-  // if (gridParent == null) return;
-
-    SkillSlot[] allSlots = gridParent.GetComponentsInChildren<SkillSlot>(true);
-
-    for (int i = 0; i < allSlots.Length; i++)
+    public void RefreshGrid()
     {
-        allSlots[i].conceptArtDisplay = SkillDisplayImage;
+        SkillSlot[] slots = gridParent.GetComponentsInChildren<SkillSlot>(true);
 
-        if (i < allSkills.Count && allSkills[i] != null)
+        for (int i = 0; i < slots.Length; i++)
         {
-            allSlots[i].SetupSlot(allSkills[i]);
+            slots[i].conceptArtDisplay = skillDisplayImage;
 
-        }
-        else
-        {
-            allSlots[i].SetAsEmpty();
+            if (i < allSkills.Count && allSkills[i] != null)
+            {
+                slots[i].SetupSlot(allSkills[i]);
+            }
+            else
+            {
+                slots[i].SetAsEmpty();
+            }
         }
     }
-}
+
+    void AutoSelectFirstCollectedSkill()
+    {
+        if (skillDisplayImage != null)
+        {
+            skillDisplayImage.sprite = null;
+            skillDisplayImage.color = new Color(0, 0, 0, 0.6f);
+        }
+
+        SkillSlot[] slots = gridParent.GetComponentsInChildren<SkillSlot>(true);
+
+        foreach (var slot in slots)
+        {
+            if (slot.currentSkill != null && slot.currentSkill.isCollected)
+            {
+                slot.OnSelectSkill();
+                break;
+            }
+        }
+    }
 }

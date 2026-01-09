@@ -1,113 +1,117 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 using System.Collections.Generic;
 
 public class SkillHUDManager : MonoBehaviour
 {
-    [Header("UI References")]
+    [Header("UI")]
     public Image skillIconDisplay;
     public TextMeshProUGUI quantityText;
-    public CanvasGroup hudCanvasGroup; 
+    public CanvasGroup hudCanvasGroup;
 
-    [Header("Skill Database")]
-    public List<SkillData> availableSkills = new List<SkillData>();
+    [Header("All Skills Database")]
+    public List<SkillData> allPossibleSkills;
+
+    private readonly List<SkillData> activeSkills = new();
     private int currentSkillIndex = 0;
 
-    void Start()
+    private void Awake()
     {
-        // Auto-grab CanvasGroup if not assigned
-        if (hudCanvasGroup == null) 
-            hudCanvasGroup = GetComponent<CanvasGroup>();
+        HideHUD();
+    }
 
+    private void Start()
+    {
+        // Delay one frame so WorldState is guaranteed loaded
+        StartCoroutine(DelayedRebuild());
+    }
+
+    private IEnumerator DelayedRebuild()
+    {
+        yield return null;
+        RebuildFromWorldState();
+    }
+
+    public void RebuildFromWorldState()
+    {
+        activeSkills.Clear();
+
+        foreach (SkillData skill in allPossibleSkills)
+        {
+            if (skill == null) continue;
+
+            if (WorldState.UnlockedSkills.Contains(skill.skillID))
+            {
+                skill.isCollected = true;
+
+                // If loading from save, restore ammo
+                if (skill.currentQuantity <= 0)
+                    skill.currentQuantity = skill.maxQuantity;
+
+                activeSkills.Add(skill);
+            }
+        }
+
+        currentSkillIndex = Mathf.Clamp(currentSkillIndex, 0, activeSkills.Count - 1);
         UpdateUI();
     }
 
-    public void SwitchToNextSkill()
+    public void AddSkill(SkillData skill)
     {
-        if (availableSkills.Count <= 1) return;
+        if (skill == null) return;
 
-        currentSkillIndex++;
-        if (currentSkillIndex >= availableSkills.Count)
+        if (!activeSkills.Contains(skill))
         {
-            currentSkillIndex = 0;
-        }
+            skill.isCollected = true;
+            skill.currentQuantity = skill.maxQuantity;
 
-        UpdateUI();
+            activeSkills.Add(skill);
+            currentSkillIndex = activeSkills.Count - 1;
+            UpdateUI();
+        }
     }
 
     public bool UseCurrentSkill()
     {
-        if (availableSkills.Count == 0) return false;
+        if (activeSkills.Count == 0) return false;
 
-        SkillData selected = availableSkills[currentSkillIndex];
-
-        if (selected.currentQuantity > 0)
+        SkillData skill = activeSkills[currentSkillIndex];
+        if (skill.currentQuantity > 0)
         {
-            selected.currentQuantity--;
+            skill.currentQuantity--;
             UpdateUI();
             return true;
         }
-
-        return false; 
+        return false;
     }
 
-public void UpdateUI()
-{
- 
-    if (availableSkills.Count == 0 || currentSkillIndex >= availableSkills.Count || availableSkills[currentSkillIndex] == null)
+    public void UpdateUI()
     {
-        // Hide the HUD using the Canvas Group
-        if (hudCanvasGroup != null) hudCanvasGroup.alpha = 0f;
+        if (activeSkills.Count == 0)
+        {
+            HideHUD();
+            return;
+        }
 
-   
-        if (quantityText != null) 
-            quantityText.text = "00/00";
-           
-            
-        // Clear the icon sprite
+        hudCanvasGroup.alpha = 1f;
+        hudCanvasGroup.blocksRaycasts = true;
+
+        SkillData skill = activeSkills[currentSkillIndex];
+        skillIconDisplay.sprite = skill.icon;
+        quantityText.text = $"{skill.currentQuantity:00}/{skill.maxQuantity:00}";
+    }
+
+    private void HideHUD()
+    {
+        hudCanvasGroup.alpha = 0f;
+        hudCanvasGroup.blocksRaycasts = false;
+
         if (skillIconDisplay != null)
             skillIconDisplay.sprite = null;
 
-
-        return; 
-
-        
-    }
-
-    //  Handle the "Active Skill" state
-    if (hudCanvasGroup != null) hudCanvasGroup.alpha = 1f;
-
-    SkillData selected = availableSkills[currentSkillIndex];
-
-    if (skillIconDisplay != null) 
-    {
-        skillIconDisplay.sprite = selected.icon;
-        // Make sure icon is opaque
-        Color c = skillIconDisplay.color;
-        c.a = 1f;
-        skillIconDisplay.color = c;
-    }
-
-    if (quantityText != null) 
-        quantityText.text = $"{selected.currentQuantity:00}/{selected.maxQuantity:00}";
-       
-        if (selected.currentQuantity <= 1)
-        {
-            quantityText.color = Color.red; // Visual warning
-        }
-        else
-        {
-            quantityText.color = Color.white; // Normal state
-        }
-}
-    // Call this whenever you pick up a new skill to refresh the HUD
-    public void AddSkill(SkillData newSkill)
-    {
-        if (!availableSkills.Contains(newSkill))
-        {
-            availableSkills.Add(newSkill);
-            UpdateUI();
-        }
+        if (quantityText != null)
+            quantityText.text = string.Empty;
     }
 }

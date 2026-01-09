@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2b68e5d50d13ce44a85116c4a2da365, type: 3}
   m_Name: Aetherstep Boots
   m_EditorClassIdentifier: 
-  relicName: Aetherstep Boots
+  relicID: DoubleJump
+  displayName: Aether Boots
   icon: {fileID: 21300000, guid: 37cb22a91594374459f4c20dd2c9f9ee, type: 3}
   description: Boots infused with compressed aether that briefly bend the air beneath
     the wearer, creating a momentary foothold in midair for an extra jump.
   conceptArt: {fileID: 21300000, guid: cc2c93f0e9cd732469e776137f85f86a, type: 3}
-  isCollected: 1

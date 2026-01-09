@@ -11,7 +11,6 @@ public class RespawnController : MonoBehaviour
     public float waitToRespawn = 2f;
     public GameObject deathEffect;
 
-    // Static variables persist across scene changes and reloads
     private static Vector3 respawnPoint = Vector3.zero;
     private static string respawnSceneName = ""; 
     private static bool hasSetRealPoint = false;
@@ -28,12 +27,25 @@ public class RespawnController : MonoBehaviour
         {
             instance = this;
             DontDestroyOnLoad(gameObject);
-            SceneManager.sceneLoaded += OnSceneLoaded;
         }
-        else { Destroy(gameObject); }
+        else 
+        { 
+            Destroy(gameObject); 
+        }
     }
 
-    // Call this ONLY from SavePoint.cs or when Loading a Save File
+    // --- NEW: Proper Event Registration ---
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+    // ---------------------------------------
+
     public void SetRespawnPoint(Vector3 point) 
     {
         respawnPoint = point;
@@ -42,15 +54,12 @@ public class RespawnController : MonoBehaviour
         Debug.Log($"<color=green>STATUE REGISTERED:</color> {respawnPoint} in {respawnSceneName}");
     }
 
-    // Call this from PlayerMovement Start()
     public void SetRespawnPointIfEmpty(Vector3 point)
     {
-        // If we have a Statue or Save File loaded, ignore the scene's default start
         if (hasSetRealPoint) return; 
 
         respawnPoint = point;
         respawnSceneName = SceneManager.GetActiveScene().name;
-        Debug.Log("<color=yellow>Default Start Point Set (No Statue yet)</color>");
     }
 
     public void Respawn()
@@ -59,32 +68,42 @@ public class RespawnController : MonoBehaviour
         StartCoroutine(RespawnCo());
     }
 
-    private IEnumerator RespawnCo()
+private IEnumerator RespawnCo()
+{
+    isHandlingRespawn = true;
+
+    // AUTO-SAVE BEFORE RELOADING
+    if (SaveManager.instance != null)
     {
-        isHandlingRespawn = true;
-        
-        // Reset enemies so they respawn when the player wakes up
-        if (EnemyStatusManager.instance != null)
-            EnemyStatusManager.instance.ResetDefeatedEnemies();
-
-        GameObject player = GameObject.FindWithTag("Player");
-        if (player != null)
-        {
-            savedFacingX = Mathf.Sign(player.transform.localScale.x);
-            if (deathEffect != null)
-                Instantiate(deathEffect, player.transform.position, Quaternion.identity);
-            player.SetActive(false);
-        }
-
-        yield return new WaitForSeconds(waitToRespawn);
-        
-        // Always load the scene where the STATUE is located
-        SceneManager.LoadScene(respawnSceneName);
+        SaveManager.instance.SaveGame(respawnSceneName, respawnPoint);
     }
 
+    // RESET ENEMIES 
+    if (EnemyStatusManager.instance != null)
+        EnemyStatusManager.instance.ResetDefeatedEnemies();
+
+     
+    GameObject player = GameObject.FindWithTag("Player");
+    if (player != null)
+    {
+        savedFacingX = Mathf.Sign(player.transform.localScale.x);
+        if (deathEffect != null)
+            Instantiate(deathEffect, player.transform.position, Quaternion.identity);
+        player.SetActive(false);
+    }
+
+    yield return new WaitForSeconds(waitToRespawn);
+    
+    // LOAD SCENE
+    if (string.IsNullOrEmpty(respawnSceneName))
+        respawnSceneName = SceneManager.GetActiveScene().name;
+
+    SceneManager.LoadScene(respawnSceneName);
+}
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (isHandlingRespawn)
+        // Added a check to only run if this is actually the active singleton instance
+        if (this == instance && isHandlingRespawn)
         {
             StartCoroutine(HandleRespawnAfterLoad());
         }
@@ -92,12 +111,15 @@ public class RespawnController : MonoBehaviour
 
     private IEnumerator HandleRespawnAfterLoad()
     {
-        // Wait for scene initialization
         yield return null; 
         yield return new WaitForEndOfFrame();
         
         GameObject player = GameObject.FindWithTag("Player");
-        if (player == null) yield break;
+        if (player == null) 
+        {
+            isHandlingRespawn = false;
+            yield break;
+        }
 
         Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
         if (rb != null)
@@ -106,7 +128,6 @@ public class RespawnController : MonoBehaviour
             rb.simulated = false; 
         }
 
-        // Teleport to the saved statue location
         player.transform.position = respawnPoint;
 
         var vcam = FindObjectOfType<CinemachineVirtualCamera>();

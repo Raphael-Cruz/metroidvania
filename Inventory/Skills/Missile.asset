@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b6e707cd9ed94a4478fe28133f31d669, type: 3}
   m_Name: Missile
   m_EditorClassIdentifier: 
-  skillName: Missile
+  skillID: Missile
   icon: {fileID: 21300000, guid: f038c5ade8484c94aac67a411491f908, type: 3}
   maxQuantity: 5
-  currentQuantity: 5
+  currentQuantity: 4
   conceptArt: {fileID: 21300000, guid: 6a3ed9191c665aa43a30a9afa0b2e202, type: 3}
   isCollected: 1

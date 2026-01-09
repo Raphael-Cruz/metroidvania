@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2b68e5d50d13ce44a85116c4a2da365, type: 3}
   m_Name: Gravitational Hook
   m_EditorClassIdentifier: 
-  relicName: Gravitational Hook
+  relicID: Hook
+  displayName: Gravitational Hook
   icon: {fileID: 21300000, guid: 21938cc99bbba8c4c8e611a85a8b4ee5, type: 3}
   description: 'An ancient relic forged from collapsed star-metal and rune-etched
     machinery.
@@ -20,4 +21,3 @@ MonoBehaviour:
     When cast, releases a focused gravity well that latches onto
     anchors, bending space itself to pull the wielder forward.'
   conceptArt: {fileID: 21300000, guid: a69669d0a5d24f0449b9f79dacdb9cd1, type: 3}
-  isCollected: 1

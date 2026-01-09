@@ -72,6 +72,16 @@ public class PlayerMovement : MonoBehaviour
 
     public bool canMove;
 
+[Header("Edge Detection")]
+public Transform wallCheck;
+public Transform ledgeCheck;
+public LayerMask whatIsEdge; // Set this to your 'Ledge' layer
+public float checkDistance = 0.2f;
+public Vector2 hangingOffset; // Manual adjustment to align hands to pixels
+
+private bool isOnEdge;
+private bool isHanging;
+
     private void Start()
     {
         if (theRB == null)
@@ -82,10 +92,22 @@ public class PlayerMovement : MonoBehaviour
 
         abilities = GetComponent<PlayerAbilityTracker>();
 
+if (hud == null) hud = FindFirstObjectByType<SkillHUDManager>();
+
+if (abilities != null)
+    {
+        WorldState.ApplyAbilitiesToPlayer(abilities);
+    }
+
         if (RespawnController.instance != null)
         {
             RespawnController.instance.SetRespawnPointIfEmpty(transform.position);
         }
+
+        if (GetComponent<PlayerAbilityTracker>() != null)
+    {
+        WorldState.ApplyAbilitiesToPlayer(GetComponent<PlayerAbilityTracker>());
+    }
 
         afterImageCounter = timeBetweenAfterImage;
         canMove = true;
@@ -118,11 +140,53 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+private void HandleEdgeHanging()
+{
+    // Only look for ledges if we are in the air 
+    if (isOnGround) 
+    {
+        if (isHanging) 
+        ExitHanging(); // Safety check
+        return;
+    }
+
+    // Detection Rays
+    float dir = visual.localScale.x; // Use your 'visual' reference for direction
+    Vector2 moveDir = new Vector2(dir, 0);
+
+    bool wallInFront = Physics2D.Raycast(wallCheck.position, moveDir, checkDistance, whatIsEdge);
+    bool airAbove = !Physics2D.Raycast(ledgeCheck.position, moveDir, checkDistance, whatIsEdge);
+
+    // Trigger Hanging
+    if (wallInFront && airAbove && !isHanging)
+    {
+        StartHanging();
+    }
+}
+
+private void OnDrawGizmos()
+{
+    if (wallCheck == null || ledgeCheck == null) return;
+
+    Gizmos.color = Color.red;
+    float dir = transform.localScale.x; // Accounts for player facing left/right
+    
+    Gizmos.DrawRay(wallCheck.position, Vector2.right * dir * checkDistance);
+    Gizmos.DrawRay(ledgeCheck.position, Vector2.right * dir * checkDistance);
+}
+
     private void Update()
     {
         if (!InGameMenuController.isGamePaused) 
     {
         HandleGrounding();
+        HandleEdgeHanging(); // <-- Add this here
+
+        if (isHanging)
+        {
+            HandleHangingInput();
+            return; // Block normal movement while hanging
+        }
 
         if (!canMove) return;
 
@@ -176,6 +240,7 @@ public class PlayerMovement : MonoBehaviour
            
         }
 
+
         // -----------------------
         // JUMP LOGIC
         // -----------------------
@@ -214,23 +279,75 @@ public class PlayerMovement : MonoBehaviour
             anim.SetTrigger("shotFired");
         }
 
-        if (Input.GetButtonDown("Fire2") && !isMissileLocking && shotMissile && isOnGround && abilities.canMissile) 
+    if (Input.GetButtonDown("Fire2") && !isMissileLocking && shotMissile && isOnGround && abilities != null && abilities.canMissile)
 {
     // Check with the HUD if we have a missile to fire
-    if (hud.UseCurrentSkill()) 
+    if (hud != null)
     {
-        StartCoroutine(ShootMissileRoutine());
+        if (hud.UseCurrentSkill()) 
+        {
+            StartCoroutine(ShootMissileRoutine());
+        }
     }
     else 
     {
-        Debug.Log("Out of Missiles!");
-        
+        // Try to find it if it's missing
+        hud = FindFirstObjectByType<SkillHUDManager>();
     }
 }
+
 
         UpdateAnimator();
     }
     }
+
+//-----------------
+//HANGIN
+//-----------------
+private void StartHanging()
+{
+/*/    isHanging = true;
+    canMove = false; // Disable normal WASD
+    theRB.velocity = Vector2.zero;
+    theRB.gravityScale = 0f; // Gravity goes away
+    theRB.constraints = RigidbodyConstraints2D.FreezeAll; // Total freeze
+    
+    anim.SetBool("isHanging", true);*/
+}
+
+
+private void HandleHangingInput()
+{
+    if (Input.GetButtonDown("Jump"))
+    {
+        ExitHanging();
+        DoJump(); // Re-use your existing Jump logic
+    }
+    
+    // Drop down if player presses 'Down' or 'S'
+    if (Input.GetAxisRaw("Vertical") < -0.1f)
+    {
+        ExitHanging();
+    }
+}
+
+private void ExitHanging()
+{
+    isHanging = false;
+    canMove = true; 
+    theRB.gravityScale = 1f; // IMPORTANT: Gravity must return to 1 (or your default)
+    theRB.constraints = RigidbodyConstraints2D.FreezeRotation; // Unfreeze position
+    
+    anim.SetBool("isHanging", false);
+}
+
+
+
+
+
+
+
+//------------------------------------
 
     private IEnumerator ShootMissileRoutine()
 {

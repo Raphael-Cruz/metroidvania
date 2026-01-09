@@ -20,23 +20,7 @@ public class SaveManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
-/* ONLY FOR TESTING, REALODS WHEN WE PRESS L
-private void Update()
-{
-    if (Input.GetKeyDown(KeyCode.L))
-    {
-        GameData data = LoadGame();
-        if (data != null)
-        {
-            // Set the respawn point for the current session
-            Vector3 loadedPos = new Vector3(data.respawnPos[0], data.respawnPos[1], data.respawnPos[2]);
-            RespawnController.instance.SetRespawnPoint(loadedPos);
-            
-            // Reload the scene
-            UnityEngine.SceneManagement.SceneManager.LoadScene(data.lastSceneName);
-        }
-    }
-}*/
+
 
 public void SaveGame(string sceneName, Vector3 pos)
 {
@@ -46,30 +30,31 @@ public void SaveGame(string sceneName, Vector3 pos)
     data.respawnPos[1] = pos.y;
     data.respawnPos[2] = pos.z;
 
+    // Grab the global progress
+    data.collectedRelics = new System.Collections.Generic.List<string>(WorldState.CollectedRelics);
+    data.collectedSkills = new System.Collections.Generic.List<string>(WorldState.UnlockedSkills);
+    data.permanentDeadEnemies = new System.Collections.Generic.List<string>(WorldState.PermanentDeadEnemies);   
+
     string json = JsonUtility.ToJson(data);
     File.WriteAllText(savePath, json);
-    
-    Debug.Log("Game Saved to: " + savePath);
-
-    // IMPORTANT: Reset enemies here too so they stay dead/alive 
-    // correctly based on your save state logic
-    if(EnemyStatusManager.instance != null)
-    {
-        EnemyStatusManager.instance.ResetDefeatedEnemies();
-    }
 }
 
-    public GameData LoadGame()
+public GameData LoadGame()
+{
+    if (File.Exists(savePath))
     {
-        if (File.Exists(savePath))
-        {
-            string json = File.ReadAllText(savePath);
-            return JsonUtility.FromJson<GameData>(json);
-        }
+        string json = File.ReadAllText(savePath);
+        GameData data = JsonUtility.FromJson<GameData>(json);
         
-        Debug.LogWarning("No save file found!");
-        return null;
+     
+        WorldState.LoadFromData(data);
+        
+        return data;
     }
+    
+    Debug.LogWarning("No save file found!");
+    return null;
+}
     
     public bool HasSaveFile()
     {

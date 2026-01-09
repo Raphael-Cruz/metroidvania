@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2b68e5d50d13ce44a85116c4a2da365, type: 3}
   m_Name: Orb Of Healing
   m_EditorClassIdentifier: 
-  relicName: Orb oh Healing
+  relicID: OrbofHealing
+  displayName: Orb of Healing
   icon: {fileID: 21300000, guid: ca96e8a9601079d4ab0617dc770e3370, type: 3}
   description: A relic where synthetic flesh and stolen divinity converge. Its pulse
     remembers how life should be.
   conceptArt: {fileID: 21300000, guid: eb6ed3b535bb1bc47bc93d000b2037fb, type: 3}
-  isCollected: 1

@@ -1,43 +1,50 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
 public class EnemyHealthController : MonoBehaviour
 {
     public int totalhealth = 3;
     public GameObject deathEffect;
 
-    [Header("Persistência")]
-    [Tooltip("Dê um nome único para este inimigo (ex: Inimigo_Sala1_A)")]
+    [Header("Persistence")]
     public string enemyID; 
+    public bool isPermanentEnemy = false; 
 
     private void Start()
     {
-        // Ao carregar a cena, pergunta ao Manager se este ID já morreu
-        if (EnemyStatusManager.instance != null && EnemyStatusManager.instance.defeatedEnemies.Contains(enemyID))
+        // Check if this enemy is already marked as permanently dead in our WorldState
+        if (!string.IsNullOrEmpty(enemyID) && WorldState.PermanentDeadEnemies.Contains(enemyID))
         {
-            gameObject.SetActive(false); // Desativa o inimigo antes de ele aparecer
+            Destroy(gameObject);
+            return;
         }
     }
 
     public void DamageEnemy(int damageAmount)
     {
         totalhealth -= damageAmount;
-
         if (totalhealth <= 0)
         {
-            if (deathEffect != null)
-            {
-                Instantiate(deathEffect, transform.position, transform.rotation);
-            }
-
-            // --- NOVO: Salva que este inimigo morreu ---
-            if (EnemyStatusManager.instance != null && !string.IsNullOrEmpty(enemyID))
-            {
-                EnemyStatusManager.instance.MarkAsDefeated(enemyID);
-            }
-
-            Destroy(gameObject);
+            HandleDeath();
         }
+    }
+
+    private void HandleDeath()
+    {
+        //Register permanent death if applicable
+        if (isPermanentEnemy && !string.IsNullOrEmpty(enemyID))
+        {
+            WorldState.PermanentDeadEnemies.Add(enemyID);
+            
+            // save the game the INSTANT a boss dies:
+             SaveManager.instance.SaveGame(SceneManager.GetActiveScene().name, transform.position);
+           
+        }
+
+        if (deathEffect != null)
+        {
+            Instantiate(deathEffect, transform.position, transform.rotation);
+        }
+
+        Destroy(gameObject);
     }
 }

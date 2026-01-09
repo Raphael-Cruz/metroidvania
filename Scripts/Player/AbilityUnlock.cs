@@ -2,19 +2,20 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+using UnityEngine.SceneManagement;
+
 public class AbilityUnlock : MonoBehaviour
-{
-    [Header("Abilities to Unlock")]
-    public bool unlockDoubleJump;
-    public bool unlockDash;
-    public bool unlockSuperJump;
-    public bool unlockMissile;
+    {
+        [Header("Abilities to Unlock")]
+        public bool unlockDoubleJump;
+        public bool unlockDash;
+        public bool unlockSuperJump;
+        public bool unlockMissile;
 
     [Header("Skill Data (For HUD)")]
-    public SkillData skillToRegister; // Drag your MissileData ScriptableObject here
+    public SkillData skillToRegister; 
 
-    public GameObject pickUpEffect;
-
+  public GameObject pickUpEffectPrefab;    
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (!other.CompareTag("Player"))
@@ -27,25 +28,36 @@ public class AbilityUnlock : MonoBehaviour
         if (player == null)
             return;
 
-        // --- Unlock logic ---
-        if (unlockDoubleJump) player.canDoubleJump = true;
-        if (unlockDash) player.canDash = true;
-        if (unlockSuperJump) player.canSuperJump = true;
-        
-        if (unlockMissile)
+            //  Register skill by ID
+        if (skillToRegister != null)
         {
-            player.canMissile = true;
-            
-            // Link to the HUD to make it appear
-            SkillHUDManager hud = FindFirstObjectByType<SkillHUDManager>();
-            if (hud != null && skillToRegister != null)
-            {
-                hud.AddSkill(skillToRegister);
-            }
+            WorldState.UnlockedSkills.Add(skillToRegister.skillID);
+
+            skillToRegister.isCollected = true;
+            skillToRegister.currentQuantity = skillToRegister.maxQuantity;
+
+            FindFirstObjectByType<SkillHUDManager>()?.AddSkill(skillToRegister);
         }
 
-  
+        //  Apply abilities
+        WorldState.ApplyAbilitiesToPlayer(player);
+   
 
-           Destroy(gameObject); 
-    }
+        //  Save immediately
+        SaveManager.instance?.SaveGame(
+            SceneManager.GetActiveScene().name,
+            other.transform.position
+        );
+
+        //  Mark persistent object
+        GetComponent<PersistenceObject>()?.MarkAsCollected();
+   if (pickUpEffectPrefab != null)
+        {
+            Instantiate(pickUpEffectPrefab, transform.position, Quaternion.identity);
+        }
+        Destroy(gameObject);}
 }
+
+
+
+   
