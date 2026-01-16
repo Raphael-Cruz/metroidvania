@@ -19,6 +19,7 @@ public class ShieldController : MonoBehaviour
     private void Awake()
     {
         instance = this;
+      
 
         if (shieldObject != null)
         {
@@ -27,45 +28,39 @@ public class ShieldController : MonoBehaviour
         }
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Q) &&
-            !isShieldActive &&
-            PlayerMovement.instance != null &&
-            PlayerMovement.instance.IsOnGround)
-        {
-            shieldRoutine = StartCoroutine(ShieldRoutine());
-        }
-    }
 
-    private IEnumerator ShieldRoutine()
-    {
-        isShieldActive = true;
 
-        // Freeze player
-        PlayerMovement.instance.canMove = false;
-        PlayerMovement.instance.theRB.velocity = Vector2.zero;
-        PlayerMovement.instance.anim.SetTrigger("shieldUse");
+ public IEnumerator ShieldRoutine()
+{
+    if (isShieldActive)
+        yield break;
 
-    yield return new WaitForSeconds(1.2f);
+    isShieldActive = true;
 
-        // SCENE CHANGED / PLAYER DESTROYED SAFETY
-        if (this == null || shieldObject == null)
-            yield break;
+    PlayerMovement.instance.canMove = false;
+    PlayerMovement.instance.theRB.velocity = Vector2.zero;
+    PlayerMovement.instance.anim.SetTrigger("shieldUse");
 
-        PlayerMovement.instance.canMove = true;
-    
-        HealthManager.instance.isInvulnerable = true;
-        shieldObject.SetActive(true);
-        yield return new WaitForSeconds(shieldDuration);
- 
-        if (shieldObject == null)
-            yield break;
+    yield return new WaitForSeconds(castAnimationTime);
 
+    if (this == null || shieldObject == null)
+        yield break;
+
+    PlayerMovement.instance.canMove = true;
+    HealthManager.instance.isInvulnerable = true;
+    shieldObject.SetActive(true);
+
+    yield return new WaitForSeconds(shieldDuration);
+
+    if (shieldObject != null)
         shieldObject.SetActive(false);
+
+    if (HealthManager.instance != null)
         HealthManager.instance.isInvulnerable = false;
-        isShieldActive = false;
-    }
+
+    isShieldActive = false;
+}
+
 
     private void OnDestroy()
     {

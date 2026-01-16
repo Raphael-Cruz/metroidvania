@@ -12,7 +12,7 @@ public class RoomTransitionManager : MonoBehaviour
 
     private void Awake()
     {
-        // Singleton Robusto
+        // Singleton 
         if (instance == null)
         {
             instance = this;
@@ -27,10 +27,7 @@ public class RoomTransitionManager : MonoBehaviour
 
     public void TransitionToRoom(string sceneName, string targetDoorID)
     {
-        if (ShieldController.instance != null)
-{
-    ShieldController.instance.gameObject.SetActive(false);
-}
+       
         StartCoroutine(TransitionRoutine(sceneName, targetDoorID));
     }
 

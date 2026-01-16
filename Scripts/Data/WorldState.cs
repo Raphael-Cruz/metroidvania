@@ -15,9 +15,11 @@ public static class WorldState
         player.canDash       = CollectedRelics.Contains("Dash");
         player.canSuperJump  = CollectedRelics.Contains("SuperJump");
         player.canHook       = CollectedRelics.Contains("Hook");
+     
 
         // SKILL-BASED ABILITIES
         player.canMissile    = UnlockedSkills.Contains("Missile");
+        player.canShield     = UnlockedSkills.Contains("Shield");
 
         Debug.Log(
             $"[WorldState] Abilities → " +
@@ -25,12 +27,17 @@ public static class WorldState
             $"Dash:{player.canDash}, " +
             $"SJ:{player.canSuperJump}, " +
             $"Hook:{player.canHook}, " +
-            $"Missile:{player.canMissile}"
+            $"Missile:{player.canMissile}"+
+            $"Shield:{player.canShield}"
         );
 
         if (player.canMissile)
         {
                   Debug.Log("Missile Registered"        );  
+        }
+          if (player.canShield)
+        {
+                  Debug.Log("Shield Registered"        );  
         }
     }
 

@@ -7,7 +7,11 @@ public class EnemyHealthController : MonoBehaviour
 
     [Header("Persistence")]
     public string enemyID; 
-    public bool isPermanentEnemy = false; 
+    public bool isPermanentEnemy = false;
+    
+    // Callback for custom death handling (e.g., playing death animation before destruction)
+    // If set, this will be called instead of immediately destroying the object
+    public System.Action<EnemyHealthController> onDeathCallback; 
 
     private void Start()
     {
@@ -30,14 +34,28 @@ public class EnemyHealthController : MonoBehaviour
 
     private void HandleDeath()
     {
+        // If a custom death callback is set, use it instead of default destruction
+        // This allows bosses to play death animations before being destroyed
+        if (onDeathCallback != null)
+        {
+            onDeathCallback.Invoke(this);
+            return;
+        }
+        
+        // Default death behavior for regular enemies
+        PerformDefaultDeath();
+    }
+    
+    // Public method that can be called after custom death handling (e.g., after animation completes)
+    public void PerformDefaultDeath()
+    {
         //Register permanent death if applicable
         if (isPermanentEnemy && !string.IsNullOrEmpty(enemyID))
         {
             WorldState.PermanentDeadEnemies.Add(enemyID);
             
             // save the game the INSTANT a boss dies:
-             SaveManager.instance.SaveGame(SceneManager.GetActiveScene().name, transform.position);
-           
+            SaveManager.instance.SaveGame(SceneManager.GetActiveScene().name, transform.position);
         }
 
         if (deathEffect != null)

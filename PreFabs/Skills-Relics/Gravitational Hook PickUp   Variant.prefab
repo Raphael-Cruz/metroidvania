@@ -56,6 +56,10 @@ PrefabInstance:
       propertyPath: relicData
       value: 
       objectReference: {fileID: 11400000, guid: 1ed70de920df6234290035177c0d4003, type: 2}
+    - target: {fileID: 6207512692092958579, guid: ae6a8826d1bfa234387f266281677a0f, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 21938cc99bbba8c4c8e611a85a8b4ee5, type: 3}
     - target: {fileID: 7547284224345973254, guid: ae6a8826d1bfa234387f266281677a0f, type: 3}
       propertyPath: uniqueID
       value: Hook

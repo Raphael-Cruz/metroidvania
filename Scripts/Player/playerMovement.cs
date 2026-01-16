@@ -28,6 +28,8 @@ public class PlayerMovement : MonoBehaviour
     public bool IsOnGround => isOnGround;
 
     public bool canDoubleJump;
+    private float groundedTimer = 0f;
+    public float groundedTimeRequired = 0.1f;
     
     [Header("Super Jump")]
     public float superJumpForce = 40f;
@@ -76,9 +78,9 @@ public class PlayerMovement : MonoBehaviour
 [Header("Edge Detection")]
 public Transform wallCheck;
 public Transform ledgeCheck;
-public LayerMask whatIsEdge; // Set this to your 'Ledge' layer
+public LayerMask whatIsEdge; 
 public float checkDistance = 0.2f;
-public Vector2 hangingOffset; // Manual adjustment to align hands to pixels
+public Vector2 hangingOffset; 
 
 private bool isOnEdge;
 private bool isHanging;
@@ -131,47 +133,40 @@ if (abilities != null)
         visual.localScale = new Vector3(facingDirection, 1, 1);
     }
 
-    private void HandleGrounding()
-    {
-        bool touchingGround = Physics2D.OverlapCircle(groundPoint.position, 0.1f, whatIsGround);
-        // Grounded only if touching ground and not moving up quickly
-        isOnGround = touchingGround && theRB.velocity.y <= 0.1f;
-
-        if (isOnGround)
-        {
-            coyoteCounter = coyoteTime;
-            coyoteFallCounter = coyoteFallTime;
-        }
-        else
-        {
-            coyoteCounter -= Time.deltaTime;
-            coyoteFallCounter -= Time.deltaTime;
-        }
-    }
-
-private void HandleEdgeHanging()
+private void HandleGrounding()
 {
-    // Only look for ledges if we are in the air 
-    if (isOnGround) 
+    // 1. Check if the circle actually overlaps ground
+    bool touchingGround = Physics2D.OverlapCircle(groundPoint.position, 0.2f, whatIsGround);
+    
+    // 2. We only want to be "grounded" if we are NOT moving upwards. 
+    // BUT, we add a tiny buffer (-0.1) so small micro-fluctuations don't break it.
+    bool notRising = theRB.velocity.y <= 0.1f; 
+    
+    isOnGround = touchingGround && notRising;
+
+    if (isOnGround)
     {
-        if (isHanging) 
-        ExitHanging(); // Safety check
-        return;
+        coyoteCounter = coyoteTime;
+        coyoteFallCounter = coyoteFallTime;
+        
+        // Reset the grounded timer
+        groundedTimer += Time.deltaTime;
+        if (groundedTimer >= groundedTimeRequired && abilities.canDoubleJump)
+        {
+            canDoubleJump = true;
+        }
     }
-
-    // Detection Rays
-    float dir = visual.localScale.x; // Use your 'visual' reference for direction
-    Vector2 moveDir = new Vector2(dir, 0);
-
-    bool wallInFront = Physics2D.Raycast(wallCheck.position, moveDir, checkDistance, whatIsEdge);
-    bool airAbove = !Physics2D.Raycast(ledgeCheck.position, moveDir, checkDistance, whatIsEdge);
-
-    // Trigger Hanging
-    if (wallInFront && airAbove && !isHanging)
+    else
     {
-        StartHanging();
+        coyoteCounter -= Time.deltaTime;
+        coyoteFallCounter -= Time.deltaTime;
+        groundedTimer = 0f; 
     }
 }
+
+
+
+
 
 private void OnDrawGizmos()
 {
@@ -189,16 +184,11 @@ private void OnDrawGizmos()
         if (!InGameMenuController.isGamePaused) 
     {
         HandleGrounding();
-        HandleEdgeHanging(); // <-- Add this here
+       
 
-        if (isHanging)
-        {
-            HandleHangingInput();
-            return; // Block normal movement while hanging
-        }
-
+       
         if (!canMove) return;
-
+/*
         // -----------------------
         // JUMP BUFFER & DASH COOLDOWN
         // -----------------------
@@ -209,7 +199,7 @@ private void OnDrawGizmos()
 
         if (dashRechargeCounter > 0)
             dashRechargeCounter -= Time.deltaTime;
-
+*/
         // -----------------------
         // DASH INPUT & PROCESSING
         // -----------------------
@@ -249,21 +239,19 @@ private void OnDrawGizmos()
            
         }
 
-
+/*
         // -----------------------
         // JUMP LOGIC
         // -----------------------
         if (Input.GetKeyDown(KeyCode.Mouse2) && coyoteCounter > 0 && abilities.canSuperJump)
         {
             DoSuperJump();
-            canDoubleJump = true;
         }
         else if (jumpBufferCounter > 0)
         {
             if (coyoteCounter > 0)
             {
                 DoJump();
-                canDoubleJump = true;
             }
             else if (canDoubleJump && abilities.canDoubleJump)
             {
@@ -277,7 +265,7 @@ private void OnDrawGizmos()
         {
             theRB.velocity = new Vector2(theRB.velocity.x, theRB.velocity.y * 0.5f);
         }
-
+*/
         // -----------------------
         // SHOOTING
         // -----------------------
@@ -288,68 +276,41 @@ private void OnDrawGizmos()
             anim.SetTrigger("shotFired");
         }
 
-    if (Input.GetButtonDown("Fire2") && !isMissileLocking && shotMissile && isOnGround && abilities != null && abilities.canMissile)
-{
-    // Check with the HUD if we have a missile to fire
-    if (hud != null)
+//----------------------
+// SKILLS
+//----------------------
+
+
+    if (Input.GetButtonDown("Fire2") && isOnGround && abilities != null )
     {
-        if (hud.UseCurrentSkill()) 
+    
+if (abilities.canMissile || abilities.canShield)
+{
+    if (hud == null)
+    {
+        hud = FindFirstObjectByType<SkillHUDManager>();
+        return;
+    }
+
+    if (hud.UseCurrentSkill())
+    {
+        if (abilities.canMissile && !isMissileLocking && shotMissile )
         {
             StartCoroutine(ShootMissileRoutine());
         }
+        else if (abilities.canShield)
+        {
+           StartCoroutine(ShieldController.instance.ShieldRoutine());
+        }
     }
-    else 
-    {
-        // Try to find it if it's missing
-        hud = FindFirstObjectByType<SkillHUDManager>();
-    }
+}
+    
 }
 
 
         UpdateAnimator();
     }
     }
-
-//-----------------
-//HANGIN
-//-----------------
-private void StartHanging()
-{
-/*/    isHanging = true;
-    canMove = false; // Disable normal WASD
-    theRB.velocity = Vector2.zero;
-    theRB.gravityScale = 0f; // Gravity goes away
-    theRB.constraints = RigidbodyConstraints2D.FreezeAll; // Total freeze
-    
-    anim.SetBool("isHanging", true);*/
-}
-
-
-private void HandleHangingInput()
-{
-    if (Input.GetButtonDown("Jump"))
-    {
-        ExitHanging();
-        DoJump(); // Re-use your existing Jump logic
-    }
-    
-    // Drop down if player presses 'Down' or 'S'
-    if (Input.GetAxisRaw("Vertical") < -0.1f)
-    {
-        ExitHanging();
-    }
-}
-
-private void ExitHanging()
-{
-    isHanging = false;
-    canMove = true; 
-    theRB.gravityScale = 1f; // IMPORTANT: Gravity must return to 1 (or your default)
-    theRB.constraints = RigidbodyConstraints2D.FreezeRotation; // Unfreeze position
-    
-    anim.SetBool("isHanging", false);
-}
-
 
 
 
@@ -382,7 +343,7 @@ private void ExitHanging()
 
     yield return null; 
 }
-
+/*
     private void DoJump()
     {
         theRB.velocity = new Vector2(theRB.velocity.x, jumpForce);
@@ -399,7 +360,7 @@ private void ExitHanging()
         coyoteCounter = 0;
         jumpBufferCounter = 0;
     }
-
+*/
     private void ShowAfterImage()
     {
         SpriteRenderer image = Instantiate(afterImage, transform.position, transform.rotation);
@@ -432,15 +393,38 @@ private void ExitHanging()
 
 private void UpdateAnimator()
 {
-   
-    if (!canMove) return; 
+    // If we are frozen (like shooting a missile), let that animation finish
+    if (isMissileLocking) return;
 
+    // BASIC STATES
     anim.SetBool("isOnGround", isOnGround);
-    anim.SetBool("isRising", theRB.velocity.y > 1.5f);
-    anim.SetBool("isHighJump", theRB.velocity.y > jumpForce * 1.5f);
     anim.SetFloat("speed", Mathf.Abs(theRB.velocity.x));
 
-    bool shouldFall = !isMissileLocking && theRB.velocity.y < -0.1f && coyoteFallCounter <= 0f;
-    anim.SetBool("isFalling", shouldFall);
+    // VERTICAL MOVEMENT
+    bool isHighJump = theRB.velocity.y > jumpForce * 1.1f; // Adjusted threshold
+    bool isRising = theRB.velocity.y > 0.1f && !isOnGround;
+    
+    // FALL LOGIC
+    // We only fall if we aren't grounded and velocity is downward
+    bool isFalling = theRB.velocity.y < -0.1f && !isOnGround;
+
+    // Apply to animator
+    anim.SetBool("isHighJump", isHighJump);
+    anim.SetBool("isRising", isRising && !isHighJump);
+    anim.SetBool("isFalling", isFalling);
 }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

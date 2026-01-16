@@ -11,6 +11,7 @@ public class AbilityUnlock : MonoBehaviour
         public bool unlockDash;
         public bool unlockSuperJump;
         public bool unlockMissile;
+           public bool unlockShield;
 
     [Header("Skill Data (For HUD)")]
     public SkillData skillToRegister; 

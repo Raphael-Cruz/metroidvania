@@ -39,7 +39,7 @@ public class PersistenceObject : MonoBehaviour
                 break;
         }
 
-        // 🔒 HARD SAVE IMMEDIATELY
+        // HARD SAVE IMMEDIATELY
         if (SaveManager.instance != null)
         {
             SaveManager.instance.SaveGame(

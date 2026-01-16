@@ -7,7 +7,8 @@ public class PlayerAbilityTracker : MonoBehaviour
     public bool canSuperJump;
     public bool canHook;
     public bool canMissile;
-
+      public bool canShield;
+public static PlayerAbilityTracker instance;
     private void Start()
     {
         WorldState.ApplyAbilitiesToPlayer(this);
