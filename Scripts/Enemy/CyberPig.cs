@@ -1,10 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-/// <summary>
-/// CyberPig Boss - Advanced AI with Hollow Knight-inspired movement
-/// Features: Phase-based combat, smooth acceleration movement, intelligent attack patterns
-/// </summary>
+
 public class CyberPig : MonoBehaviour
 {
     #region HEALTH & PHASE SYSTEM
@@ -293,32 +290,33 @@ public class CyberPig : MonoBehaviour
     #endregion
 
     #region PHASE SYSTEM
-    void CheckPhaseTransitions()
-    {
-        if (healthController == null)
-            return;
-        
-        int currentHealth = healthController.totalhealth;
-        
-        // Phase 2: Magic Sword Cast (at 2/3 HP remaining)
-        if (!hasTriggeredMagicSwordCast && currentHealth <= phase2HealthThreshold && currentHealth > 0)
-        {
-            hasTriggeredMagicSwordCast = true;
-             hasTriggeredFireSword = true;
-            StartCoroutine(TriggerMagicSwordCast());
-                StartCoroutine(TriggerFireSword());
-        }
-        
-        // Phase 3: Fire Sword Active (at 1/3 HP remaining)
-        if (!hasTriggeredFireSword && currentHealth <= phase3HealthThreshold && currentHealth > 0)
-        {
-            hasTriggeredFireSword = true;
-            StartCoroutine(TriggerFireSword());
-             
-        }
-
+void CheckPhaseTransitions()
+{
+    if (healthController == null) return;
     
+    int currentHealth = healthController.totalhealth;
+    
+    // Phase 2: Magic Sword (Only trigger if not already in Phase 2 or 3)
+    if (!hasTriggeredMagicSwordCast && currentHealth <= phase2HealthThreshold && currentHealth > phase3HealthThreshold)
+    {
+        hasTriggeredMagicSwordCast = true;
+        StartCoroutine(TriggerMagicSwordCast());
+        
+        // Enable projectile casting in Phase 2
+        BossSkillCaster caster = GetComponent<BossSkillCaster>();
+        if(caster != null) caster.SetCanCast(true);
     }
+    
+    // Phase 3: Fire Sword
+    if (!hasTriggeredFireSword && currentHealth <= phase3HealthThreshold && currentHealth > 0)
+    {
+        hasTriggeredFireSword = true;
+        StartCoroutine(TriggerFireSword());
+        
+        // Make projectiles faster or more frequent in Phase 3
+        // You could add a method to BossSkillCaster to 'Enrage' the casting
+    }
+}
 
     IEnumerator TriggerMagicSwordCast()
     {
@@ -517,22 +515,24 @@ public class CyberPig : MonoBehaviour
         }
     }
 
-    void Flip()
+ 
+void Flip()
+{
+    isFacingRight = !isFacingRight;
+    
+    // 1. Flip visual do Sprite
+    if (spriteRenderer != null)
     {
-        isFacingRight = !isFacingRight;
-        
-        if (spriteRenderer != null)
-        {
-            spriteRenderer.flipX = !isFacingRight;
-        }
-        else
-        {
-            // Fallback: flip via scale
-            Vector3 scale = transform.localScale;
-            scale.x *= -1;
-            transform.localScale = scale;
-        }
+        spriteRenderer.flipX = !isFacingRight;
     }
+
+    // 2. Flip do ponto de spawn (acessando o outro componente)
+    BossSkillCaster caster = GetComponent<BossSkillCaster>();
+    if (caster != null)
+    {
+        caster.FlipSpawnPoint(isFacingRight);
+    }
+}
     #endregion
 
     #region ANIMATION
