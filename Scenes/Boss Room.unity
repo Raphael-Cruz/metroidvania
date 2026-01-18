@@ -128,6 +128,53 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2427392998171284835, guid: 2f2792d599287264bac54d1b61d5cd64, type: 3}
   m_PrefabInstance: {fileID: 466317060}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &459661654
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 459661655}
+  - component: {fileID: 459661656}
+  m_Layer: 3
+  m_Name: 'GhostTrail '
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &459661655
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 459661654}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1364374585}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &459661656
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 459661654}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c75816bd7762a44ea1614a43475359a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ghostPrefab: {fileID: 2374310820666370589, guid: 55f173c7555304c4493c00002aad8312, type: 3}
+  poolSize: 10
+  spawnRate: 0.05
 --- !u!1001 &466317060
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2762,12 +2809,12 @@ GameObject:
   - component: {fileID: 1364374585}
   - component: {fileID: 1364374584}
   - component: {fileID: 1364374583}
-  - component: {fileID: 1364374582}
   - component: {fileID: 1364374587}
   - component: {fileID: 1364374586}
   - component: {fileID: 1364374588}
   - component: {fileID: 1364374589}
   - component: {fileID: 1364374590}
+  - component: {fileID: 1364374591}
   m_Layer: 3
   m_Name: CyberPig_Boss
   m_TagString: Enemy
@@ -2775,33 +2822,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1364374582
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1364374581}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 87c0dbc0aae3e1844a07e9b55494f878, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  healthController: {fileID: 1364374589}
-  maxMoveSpeed: 5
-  acceleration: 12
-  deceleration: 18
-  aggroRange: 8
-  combatDistance: 3
-  combatDistanceTolerance: 1
-  attackCooldown: 2
-  attackRange: 2.5
-  lungeSpeed: 8
-  lungeDuration: 0.4
-  anim: {fileID: 1364374583}
-  spriteRenderer: {fileID: 1364374584}
-  player: {fileID: 397770875}
-  rb: {fileID: 1364374586}
 --- !u!95 &1364374583
 Animator:
   serializedVersion: 5
@@ -2890,6 +2910,7 @@ Transform:
   m_Children:
   - {fileID: 2038906610}
   - {fileID: 1739935722}
+  - {fileID: 459661655}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!50 &1364374586
@@ -3001,6 +3022,54 @@ MonoBehaviour:
   maxCastInterval: 6
   skillSpawnPoint: {fileID: 1739935722}
   bossAnimator: {fileID: 1364374583}
+--- !u!114 &1364374591
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1364374581}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87c0dbc0aae3e1844a07e9b55494f878, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  healthController: {fileID: 1364374589}
+  maxHealth: 50
+  player: {fileID: 397770875}
+  rb: {fileID: 1364374586}
+  anim: {fileID: 1364374583}
+  spriteRenderer: {fileID: 1364374584}
+  skillCaster: {fileID: 1364374590}
+  aggroRange: 50
+  combatDistance: 7
+  decisionDelay: 0.35
+  runSpeed: 4
+  burstSpeed: 8
+  backstepSpeed: 6
+  lungeSpeed: 10
+  ghostTrail: {fileID: 459661656}
+  burstDuration: 0.8
+  backstepDuration: 0.5
+  lungeDuration: 0.8
+  minAttackCooldown: 1.5
+  maxAttackCooldown: 2.5
+  attackRange: 8
+  dashAttackRange: 17
+  attackWindupTime: 0.15
+  attackRecoverTime: 0.5
+  phase2CastDuration: 2
+  phase3CastDuration: 1.5
+  deathAnimationDuration: 2.5
+  param_Idle: isIdle
+  param_Chase: isChasing
+  param_Attack: isAttacking
+  param_Cast: isCastingMagicSword
+  param_FireMode: hasFireSword
+  param_Hurt: isHurt
+  param_Dead: Dead
+  param_MoveSpeed: moveSpeed
+  param_Dashing: dashing
 --- !u!1 &1412089653
 GameObject:
   m_ObjectHideFlags: 0
@@ -37851,7 +37920,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5586248413999718829, guid: 68ed6c6bfb5791545b542ddc1235e5ed, type: 3}
       propertyPath: m_Layer
-      value: 15
+      value: 9
       objectReference: {fileID: 0}
     - target: {fileID: 5586248413999718829, guid: 68ed6c6bfb5791545b542ddc1235e5ed, type: 3}
       propertyPath: m_IsActive

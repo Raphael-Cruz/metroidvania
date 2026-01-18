@@ -13,6 +13,9 @@ public class EnemyHealthController : MonoBehaviour
     // If set, this will be called instead of immediately destroying the object
     public System.Action<EnemyHealthController> onDeathCallback; 
 
+    // Callback for when damage is taken
+    public System.Action<int> onDamageCallback;
+
     private void Start()
     {
         // Check if this enemy is already marked as permanently dead in our WorldState
@@ -26,6 +29,9 @@ public class EnemyHealthController : MonoBehaviour
     public void DamageEnemy(int damageAmount)
     {
         totalhealth -= damageAmount;
+        
+        onDamageCallback?.Invoke(damageAmount);
+
         if (totalhealth <= 0)
         {
             HandleDeath();

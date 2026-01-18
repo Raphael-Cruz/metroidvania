@@ -15,7 +15,7 @@ public class BossSkillCaster : MonoBehaviour
     [SerializeField] private Animator bossAnimator;
     
     private float nextCastTime;
-    private bool canCast = true;
+    private bool canCast = false;
     
     private void Start()
     {

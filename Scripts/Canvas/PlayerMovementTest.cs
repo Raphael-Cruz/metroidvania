@@ -446,8 +446,7 @@ public class PlayerMovementTest : MonoBehaviour
 	//Dash Coroutine
 	private IEnumerator StartDash(Vector2 dir)
 	{
-		//Overall this method of dashing aims to mimic Celeste, if you're looking for
-		// a more physics-based approach try a method similar to that used in the jump
+		
 
 		LastOnGroundTime = 0;
 		LastPressedDashTime = 0;
