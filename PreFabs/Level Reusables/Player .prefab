@@ -467,7 +467,7 @@ MonoBehaviour:
   whatIsGround:
     serializedVersion: 2
     m_Bits: 8
-  canDoubleJump: 1
+  canDoubleJump: 0
   groundedTimeRequired: 0.1
   superJumpForce: 40
   coyoteTime: 0.15

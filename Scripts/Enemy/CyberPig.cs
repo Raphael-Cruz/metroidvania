@@ -4,587 +4,465 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class CyberPig : MonoBehaviour
 {
-    #region HEALTH & PHASE SYSTEM
-    [Header("Health System")]
-    [SerializeField] private EnemyHealthController healthController;
-    [Tooltip("If set > 0, this will overwrite the EnemyHealthController's health on start.")]
-    [SerializeField] private int maxHealth = 50;
-
-    private int phase2HealthThreshold;
-    private int phase3HealthThreshold;
-
-    private bool hasTriggeredMagicSwordCast;
-    private bool hasTriggeredFireSword;
-    private bool isDead;
-
-    public enum BossPhase
-    {
-        Phase1_Normal,
-        Phase2_MagicSwordCast,
-        Phase3_FireSword
-    }
-
-    private BossPhase currentPhase = BossPhase.Phase1_Normal;
-    #endregion
-
     #region REFERENCES
     [Header("References")]
     [SerializeField] private Transform player;
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private Animator anim;
     [SerializeField] private SpriteRenderer spriteRenderer;
-    [SerializeField] private BossSkillCaster skillCaster; // Cached reference
+    [SerializeField] private EnemyHealthController healthController;
+    [SerializeField] private BossSkillCaster skillCaster;
+    [SerializeField] private GhostTrail ghostTrail;
+    [SerializeField] private GameObject swordHitbox360; // Child object "360 sword plain spiral"
     #endregion
 
-    #region BOSS MOVEMENT
-    [Header("Boss Movement")]
-    [SerializeField] private float aggroRange = 9f;
-    [SerializeField] private float combatDistance = 3f; // Ideal distance to hang out
-    [SerializeField] private float decisionDelay = 0.35f;
+    #region RANGES
+    [Header("Ranges")]
+    [SerializeField] private float attackRange = 3.5f;   // Swing attack
+    [SerializeField] private float lungeRange = 6.0f;    // Lunge attack
+    [SerializeField] private float dashRange = 10.5f;    // Dash + Lunge combo
+    [SerializeField] private float aggroRange = 15f;     // Start chasing
+    #endregion
 
+    #region SPEEDS & DURATIONS
     [Header("Speeds")]
-    [SerializeField] private float runSpeed = 4f;       // Normal chase speed
-    [SerializeField] private float burstSpeed = 8f;      // Gap closer
-    [SerializeField] private float backstepSpeed = 6f;   // Retreat
-    [SerializeField] private float lungeSpeed = 10f;     // Attack lunge
-
-    [Header("FX")]
-    [SerializeField] private GhostTrail ghostTrail;         // Reference to the after-image system
+    [SerializeField] private float walkSpeed = 3f;
+    [SerializeField] private float dashSpeed = 14f;
+    [SerializeField] private float lungeSpeed = 12f;
 
     [Header("Durations")]
-    [SerializeField] private float burstDuration = 0.4f;
-    [SerializeField] private float backstepDuration = 0.3f;
-    [SerializeField] private float lungeDuration = 0.3f;
-
-    private Vector2 currentVelocity;
-    private bool isFacingRight = true;
-    private bool isDeciding;
+    [SerializeField] private float dashDuration = 0.25f;
+    [SerializeField] private float lungeDuration = 0.2f;
+    [SerializeField] private float postActionPause = 0.5f; // Deliberate pause between actions
+    [SerializeField] private float attackCooldown = 1.2f;
     #endregion
 
-    #region COMBAT
-    [Header("Combat")]
-    [SerializeField] private float minAttackCooldown = 1.5f;
-    [SerializeField] private float maxAttackCooldown = 2.5f;
-    [SerializeField] private float attackRange = 5.5f;
-    [SerializeField] private float dashAttackRange = 10.5f; // Distance to trigger a dash-in attack
+    #region HEALTH & PHASES
+    [Header("Health System")]
+    [SerializeField] private int maxHealth = 50;
 
-    [Header("Animation Timings")]
-    [SerializeField] private float attackWindupTime = 0.15f; // Time before lunge starts
-    [SerializeField] private float attackRecoverTime = 0.5f; // Time after lunge
-    [SerializeField] private float phase2CastDuration = 2.0f;
-    [SerializeField] private float phase3CastDuration = 1.5f;
-    [SerializeField] private float deathAnimationDuration = 2.5f;
-
-    private float lastAttackTime;
-    private bool isAttacking;
+    private int phase2Threshold;
+    private int phase3Threshold;
+    private bool triggeredPhase2;
+    private bool triggeredPhase3;
     #endregion
 
     #region ANIMATION PARAMETERS
-    [Header("Animation Parameter Names")]
-    [SerializeField] private string param_Idle = "isIdle";
-    [SerializeField] private string param_Chase = "isChasing";
-    [SerializeField] private string param_Attack = "isAttacking";
+    [Header("Animation Parameters")]
+    [SerializeField] private string param_IsRunning = "isRunning";
+    [SerializeField] private string param_IsIdle = "isIdle";
+    [SerializeField] private string param_Dashing = "dashing";
+    [SerializeField] private string param_Swinging = "isSwinging";
+    [SerializeField] private string param_Lunge = "Lunge";
     [SerializeField] private string param_Cast = "isCastingMagicSword";
     [SerializeField] private string param_FireMode = "hasFireSword";
-    [SerializeField] private string param_Hurt = "isHurt";
     [SerializeField] private string param_Dead = "Dead";
-    [SerializeField] private string param_MoveSpeed = "moveSpeed";
-    [SerializeField] private string param_Dashing = "dashing";
 
-    // Hashes
-    private int animID_Idle;
-    private int animID_Chase;
-    private int animID_Attack;
+    private int animID_IsRunning;
+    private int animID_IsIdle;
+    private int animID_Dashing;
+    private int animID_Swinging;
+    private int animID_Lunge;
     private int animID_Cast;
     private int animID_FireMode;
-    private int animID_Hurt;
     private int animID_Dead;
-    private int animID_MoveSpeed;
-    private int animID_Dashing;
-
-    // Availability Flags
-    private bool hasParam_MoveSpeed;
     #endregion
 
     #region STATE
-    private enum BossState
-    {
-        Idle,
-        Thinking,
-        Moving,
-        Attacking,
-        Casting,
-        Dead
-    }
+    private enum ActionState { Idle, Walking, Dashing, Lunging, Swinging, Casting, Dead }
+    private ActionState currentState = ActionState.Idle;
 
-    private BossState currentState = BossState.Idle;
+    private bool IsBusy => currentState != ActionState.Idle && currentState != ActionState.Walking;
+
+    private float lastAttackTime;
+    private bool isFacingRight = true;
+    private Vector2 currentVelocity;
     #endregion
 
     #region INITIALIZATION
     void Awake()
     {
-        // Cache references
         if (!rb) rb = GetComponent<Rigidbody2D>();
         if (!anim) anim = GetComponent<Animator>();
         if (!spriteRenderer) spriteRenderer = GetComponent<SpriteRenderer>();
         if (!healthController) healthController = GetComponent<EnemyHealthController>();
-        if (!skillCaster) skillCaster = GetComponent<BossSkillCaster>();
 
-        // Physics setup
-        rb.gravityScale = 3f;
-        rb.freezeRotation = true;
-        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-
-        // Initialize Animation IDs and Check Existence
-        InitializeAnimatorParameters();
-    }
-
-    void InitializeAnimatorParameters()
-    {
-        if (!anim) return;
-
-        
-        
-        animID_Idle = Animator.StringToHash(param_Idle);
-        animID_Chase = Animator.StringToHash(param_Chase);
-        animID_Attack = Animator.StringToHash(param_Attack);
+        // Cache animation hashes
+        animID_IsRunning = Animator.StringToHash(param_IsRunning);
+        animID_IsIdle = Animator.StringToHash(param_IsIdle);
+        animID_Dashing = Animator.StringToHash(param_Dashing);
+        animID_Swinging = Animator.StringToHash(param_Swinging);
+        animID_Lunge = Animator.StringToHash(param_Lunge);
         animID_Cast = Animator.StringToHash(param_Cast);
         animID_FireMode = Animator.StringToHash(param_FireMode);
-        animID_Hurt = Animator.StringToHash(param_Hurt);
         animID_Dead = Animator.StringToHash(param_Dead);
-        animID_Dashing = Animator.StringToHash(param_Dashing);
-        
-        // Strict check for Float parameter to avoid the crash loop
-        animID_MoveSpeed = Animator.StringToHash(param_MoveSpeed);
-        hasParam_MoveSpeed = HasParameter(param_MoveSpeed, AnimatorControllerParameterType.Float);
 
-        if (!hasParam_MoveSpeed)
-        {
-            Debug.LogWarning($"[CyberPig] Animator is missing Float parameter '{param_MoveSpeed}'. movement speed animation will not play.");
-        }
+        // Ensure 360 sword is inactive at start
+        if (swordHitbox360) swordHitbox360.SetActive(false);
     }
 
-    private bool HasParameter(string name, AnimatorControllerParameterType type)
+    bool HasAnimatorParameter(string paramName, AnimatorControllerParameterType type)
     {
         if (!anim) return false;
-        foreach (var param in anim.parameters)
+        foreach (var p in anim.parameters)
         {
-            if (param.name == name && param.type == type) return true;
+            if (p.name == paramName && p.type == type) return true;
         }
         return false;
     }
 
     void Start()
     {
-        // Setup Health
-        if (healthController != null)
+        // Setup health
+        if (healthController)
         {
-            if (maxHealth > 0)
-            {
-                healthController.totalhealth = maxHealth;
-            }
-            healthController.enemyID = "CyberPig_Boss";
-            healthController.isPermanentEnemy = true;
-            
-            //**Important for death animation
-            healthController.onDeathCallback = OnBossDeath;
-            
-            //**Important for phase transitions
-            healthController.onDamageCallback = (dmg) => OnBossDamaged();
+            if (maxHealth > 0) healthController.totalhealth = maxHealth;
+            healthController.onDeathCallback = OnDeath;
+            healthController.onDamageCallback = (_) => CheckPhaseTransitions();
         }
 
-        // Calculate Thresholds
-        // Make sure we use the actual totalhealth if maxHealth was 0
-        int hpBase = healthController != null ? healthController.totalhealth : maxHealth;
-        phase2HealthThreshold = Mathf.RoundToInt(hpBase * 0.60f); // 60%
-        
-        phase3HealthThreshold = Mathf.RoundToInt(hpBase * 0.30f); // 30%
+        int hp = healthController ? healthController.totalhealth : maxHealth;
+        phase2Threshold = Mathf.RoundToInt(hp * 0.6f);
+        phase3Threshold = Mathf.RoundToInt(hp * 0.3f);
 
-        Debug.Log($"[CyberPig] Inited. MaxHP: {hpBase}, P2 Threshold: {phase2HealthThreshold}, P3 Threshold: {phase3HealthThreshold}");
-
-        // Find Player
+        // Find player if not assigned
         if (!player)
         {
-            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            var p = GameObject.FindGameObjectWithTag("Player");
             if (p) player = p.transform;
         }
     }
     #endregion
 
-    #region UPDATE
+    #region UPDATE LOOPS
     void Update()
     {
-        if (isDead || !player) return;
+        if (currentState == ActionState.Dead || !player) return;
 
-        // Phase transitions are now handled in OnBossDamaged for efficiency,
-        // BUT we keep a safety check if needed, or rely solely on events. 
-        // For reliability in this specific edit, I will trust the event hook mechanism.
-        
-        UpdateAI();
-        UpdateAnimations();
+        if (!IsBusy)
+        {
+            DecideNextAction();
+        }
+
+        UpdateFacing();
     }
 
     void FixedUpdate()
     {
-        if (isDead)
+        if (currentState == ActionState.Dead)
         {
             rb.velocity = Vector2.zero;
             return;
         }
 
-        // Apply velocity from logic but PRESERVE GRAVITY (y-velocity)
-        // If currentVelocity.y is 0, we don't want to force him to float.
         rb.velocity = new Vector2(currentVelocity.x, rb.velocity.y);
-        
-        // Face player unless attacking (prevents spinning during attack windup)
-        if (!isAttacking && currentState != BossState.Casting)
+
+        // Update running/idle animation based on movement
+        if (anim)
         {
-            UpdateFacing();
+            bool isMoving = Mathf.Abs(currentVelocity.x) > 0.1f;
+            anim.SetBool(animID_IsRunning, isMoving);
+            anim.SetBool(animID_IsIdle, !isMoving);
         }
     }
     #endregion
 
-    #region AI CORE (IMPROVED)
-    void UpdateAI()
+    #region AI DECISION
+    void DecideNextAction()
     {
-        // Block AI updates if we are busy
-        if (isDeciding || isAttacking || currentState == BossState.Casting) return;
-
         float dist = Vector2.Distance(transform.position, player.position);
 
-        // De-aggro logic
+        // Outside aggro range - idle
         if (dist > aggroRange)
         {
             currentVelocity = Vector2.zero;
-            currentState = BossState.Idle;
             return;
         }
 
-        // If not busy, make a decision
-        StartCoroutine(DecisionRoutine(dist));
-    }
-
-    IEnumerator DecisionRoutine(float dist)
-    {
-        isDeciding = true;
-        currentState = BossState.Thinking;
-        currentVelocity = Vector2.zero; // Brief pause to "think" looks natural
-
-        // Allow decision time to vary slightly for organic feel
-        float wait = decisionDelay * Random.Range(0.8f, 1.2f);
-        yield return new WaitForSeconds(wait);
-
-        // Decision Tree (Priority Selector)
-
-        // Too Close? Backstep (Kiting)
-        // If we are uncomfortably close, retreat to get better spacing
-        if (dist < combatDistance * 0.5f) 
+        // On cooldown - walk closer if needed
+        if (Time.time < lastAttackTime + attackCooldown)
         {
-            yield return StartCoroutine(Backstep());
-        }
-        // Can Attack?
-        else if (CanAttack())
-        {
-            if (dist <= attackRange)
-            {
-                // Standard melee attack
-                yield return StartCoroutine(PerformAttack(false));
-            }
-            else if (dist <= dashAttackRange)
-            {
-                // Gap closer attack (Dash then Strike)
-                yield return StartCoroutine(PerformAttack(true));
-            }
+            if (dist > attackRange + 0.5f)
+                WalkTowardPlayer();
             else
-            {
-                // Cooldown ready, but too far. Move closer.
-                yield return StartCoroutine(ChasePlayer(0.5f));
-            }
-        }
-        // Just positioning
-        else 
-        {
-            if (dist > combatDistance + 1.5f)
-            {
-                // Too far, close gap
-                yield return StartCoroutine(ChasePlayer(Random.Range(0.3f, 0.6f)));
-            }
-            else
-            {
-                // In sweet spot, idle/strafe or small tactical repostion
-                // For now, just wait a bit (stare down)
-                yield return new WaitForSeconds(0.2f);
-            }
+                currentVelocity = Vector2.zero;
+            return;
         }
 
-        isDeciding = false;
-    }
-
-    private bool CanAttack()
-    {
-        return Time.time >= lastAttackTime + GetCurrentAttackCooldown();
-    }
-
-    private float GetCurrentAttackCooldown()
-    {
-        // Randomize cooldown
-        return Random.Range(minAttackCooldown, maxAttackCooldown);
-    }
-    #endregion
-
-    #region MOVEMENTS & ACTIONS
-    IEnumerator ChasePlayer(float duration)
-    {
-        currentState = BossState.Moving;
-        float t = 0f;
-
-        while (t < duration && !isAttacking) // Stop if interrupted
+        // Priority: Swing > Lunge > Dash+Lunge > Walk
+        if (dist <= attackRange)
         {
-            if (!player) break;
-            
-            Vector2 dir = (player.position - transform.position).normalized;
-            currentVelocity = dir * runSpeed;
-            
-            t += Time.deltaTime;
-            yield return null;
+            StartCoroutine(DoSwingAttack());
         }
-        currentVelocity = Vector2.zero;
-    }
-
-    IEnumerator Backstep()
-    {
-        currentState = BossState.Moving;
-        // Move away from player
-        Vector2 dir = (transform.position - player.position).normalized;
-        float t = 0f;
-
-        while (t < backstepDuration)
+        else if (dist <= lungeRange)
         {
-            currentVelocity = dir * backstepSpeed;
-            t += Time.deltaTime;
-            yield return null;
+            StartCoroutine(DoLunge());
         }
-        currentVelocity = Vector2.zero;
-    }
-
-    IEnumerator PerformAttack(bool isDashAttack)
-    {
-   
-        currentState = BossState.Attacking;
-        isAttacking = true;
-        lastAttackTime = Time.time;
-        currentVelocity = Vector2.zero;
-
-        // Dash in first
-        if (isDashAttack)
+        else if (dist <= dashRange)
         {
-            Vector2 dir = (player.position - transform.position).normalized;
-            float t = 0f;
-            while (t < burstDuration)
-            {
-                // High speed burst
-                currentVelocity = dir * burstSpeed;
-                t += Time.deltaTime;
-                anim?.SetTrigger(animID_Dashing);
-                
-                // Trigger After-Image
-                if (ghostTrail != null) ghostTrail.TrySpawnGhost(spriteRenderer, transform);
-
-                yield return null;
-            }
-            currentVelocity = Vector2.zero;
-            // Small pause after burst before strike
-            yield return new WaitForSeconds(0.1f);
-        }
-
-        // Ensure we are facing the player before attacking
-        // (Player might have moved behind us during the dash)
-        UpdateFacing();
-
-        // Trigger Animation
-        anim?.SetTrigger(animID_Attack);
-
-        // Wait a frame for the animator to transition into the Attack state
-        yield return null; 
-        yield return null;
-
-        // Get the length of the current animation (assuming it transitioned correctly)
-        float animLength = 1.0f; // Default safety
-        if (anim)
-        {
-            AnimatorStateInfo info = anim.GetCurrentAnimatorStateInfo(0);
-            // Verify we are actually in an attack state if possible, otherwise just take the length
-            animLength = info.length;
-        }
-
-        float startTime = Time.time;
-
-        // Windup (Wait before the damage/lunge part)
-        // Reverted the 2.5f hardcode to using the variable (or 0.5f minimum if 0)
-        float windup = attackWindupTime > 0 ? attackWindupTime : 0.5f;
-        yield return new WaitForSeconds(windup);
-
-        // Lunge forward during the strike
-        yield return StartCoroutine(Lunge());
-
-        // Now wait for the REST of the animation to finish
-        // We calculate how much time has passed since start
-        float elapsed = Time.time - startTime;
-        float remaining = animLength - elapsed;
-
-        if (remaining > 0)
-        {
-            yield return new WaitForSeconds(remaining);
+            StartCoroutine(DoDashLungeCombo());
         }
         else
         {
-            // If our physics took longer than the animation, add a small recovery anyway
-            yield return new WaitForSeconds(attackRecoverTime);
+            WalkTowardPlayer();
         }
-
-        isAttacking = false;
-        currentState = BossState.Idle;
     }
 
-    IEnumerator Lunge()
+    void WalkTowardPlayer()
     {
-        if (!player) yield break;
+        currentState = ActionState.Walking;
+        float dir = player.position.x > transform.position.x ? 1f : -1f;
+        currentVelocity = new Vector2(dir * walkSpeed, 0f);
+    }
+    #endregion
 
-        Vector2 dir = (player.position - transform.position).normalized;
-        float t = 0f;
+    #region ACTIONS
+    IEnumerator DoSwingAttack()
+    {
+        currentState = ActionState.Swinging;
+        currentVelocity = Vector2.zero;
+        lastAttackTime = Time.time;
 
-        while (t < lungeDuration)
+        // Face player before attacking (direction locks here)
+        FacePlayer();
+
+        // Trigger animation
+        anim.SetTrigger(animID_Swinging);
+
+        // Wait for animation to complete
+        yield return WaitForCurrentAnimation();
+
+       
+
+        // Post-action pause
+        yield return new WaitForSeconds(postActionPause);
+ 
+        currentState = ActionState.Idle;
+
+    }
+        //animation event first "damage" frame
+        public void OpenSwordHitbox() {
+            if (swordHitbox360) swordHitbox360.SetActive(true);
+        }
+        //animation event last "damage" frame
+        public void CloseSwordHitbox() {
+            if (swordHitbox360) swordHitbox360.SetActive(false);
+        }
+
+    IEnumerator DoLunge()
+    {
+        currentState = ActionState.Lunging;
+        currentVelocity = Vector2.zero;
+        lastAttackTime = Time.time;
+
+        // Face player before lunging (direction locks here)
+        FacePlayer();
+        Vector2 lungeDir = GetFacingDirection();
+
+        // Trigger animation
+        anim.SetTrigger(animID_Lunge);
+
+        // Wait a frame for state transition
+        yield return null;
+
+        // Lunge movement (uses locked direction)
+        float elapsed = 0f;
+        while (elapsed < lungeDuration)
         {
-            currentVelocity = dir * lungeSpeed;
-            t += Time.deltaTime;
+            currentVelocity = lungeDir * lungeSpeed;
+            elapsed += Time.deltaTime;
             yield return null;
         }
+
         currentVelocity = Vector2.zero;
+
+        // Wait for rest of animation
+        yield return WaitForCurrentAnimation();
+
+        // Post-action pause
+        yield return new WaitForSeconds(postActionPause);
+
+        currentState = ActionState.Idle;
+    }
+
+    IEnumerator DoDashLungeCombo()
+    {
+        // Set attack time at START to prevent immediate follow-up
+        lastAttackTime = Time.time;
+
+        // Face player before dashing (direction locks here)
+        FacePlayer();
+        Vector2 dashDir = GetFacingDirection();
+
+        // DASH PHASE
+        currentState = ActionState.Dashing;
+        currentVelocity = Vector2.zero;
+
+        anim.SetTrigger(animID_Dashing);
+
+        float elapsed = 0f;
+        while (elapsed < dashDuration)
+        {
+            currentVelocity = dashDir * dashSpeed;
+            
+            // Ghost trail effect
+            if (ghostTrail) ghostTrail.TrySpawnGhost(spriteRenderer, transform);
+            
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        currentVelocity = Vector2.zero;
+
+        // Brief pause between dash and lunge
+        yield return new WaitForSeconds(0.05f);
+
+        // Check if we're now in lunge range
+        float dist = Vector2.Distance(transform.position, player.position);
+        if (dist <= lungeRange)
+        {
+            // Re-face player for lunge accuracy
+            FacePlayer();
+            Vector2 lungeDir = GetFacingDirection();
+
+            // LUNGE PHASE (immediate follow-up)
+            currentState = ActionState.Lunging;
+            lastAttackTime = Time.time;
+
+            anim.SetTrigger(animID_Lunge);
+            yield return null;
+
+            elapsed = 0f;
+            while (elapsed < lungeDuration)
+            {
+                currentVelocity = lungeDir * lungeSpeed;
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            currentVelocity = Vector2.zero;
+            yield return WaitForCurrentAnimation();
+        }
+
+        // Post-action pause
+        yield return new WaitForSeconds(postActionPause);
+
+        currentState = ActionState.Idle;
+    }
+
+    IEnumerator WaitForCurrentAnimation()
+    {
+        // Wait for animator to transition into the new state
+        yield return new WaitForSeconds(0.5f);
+        
+        // Get the current animation length
+        float length = 1.5f; // Minimum fallback
+        if (anim)
+        {
+            AnimatorStateInfo stateInfo = anim.GetCurrentAnimatorStateInfo(0);
+            length = Mathf.Max(stateInfo.length, 0.5f); // At least 0.5s to prevent cutting
+        }
+        
+        yield return new WaitForSeconds(length);
     }
     #endregion
 
-    #region PHASES & EVENTS
-    /// <summary>
-    /// Called by EnemyHealthController via UnityEvent or direct call
-    /// </summary>
-    public void OnBossDamaged()
-    {
-        if (isDead) return;
-
-        anim?.SetTrigger(animID_Hurt);
-            
-
-        
-        Debug.Log($"[CyberPig] Taken Damage. Current HP: {healthController.totalhealth}");
-        CheckPhaseTransitions();
-    }
-
+    #region PHASES
     void CheckPhaseTransitions()
     {
+        if (!healthController) return;
         int hp = healthController.totalhealth;
-        Debug.Log($"[CyberPig] Checking Phase. HP: {hp}, P2Flag: {hasTriggeredMagicSwordCast}, P3Flag: {hasTriggeredFireSword}");
 
-        // Phase 2 Transition
-        if (!hasTriggeredMagicSwordCast && hp <= phase2HealthThreshold && hp > phase3HealthThreshold)
+        if (!triggeredPhase2 && hp <= phase2Threshold && hp > phase3Threshold)
         {
-            Debug.Log("[CyberPig] Activating Phase 2!");
-            hasTriggeredMagicSwordCast = true;
-            InterruptActions();
-            StartCoroutine(StartPhase2());
+            triggeredPhase2 = true;
+            StartCoroutine(TriggerPhase2());
         }
-
-        // Phase 3 Transition
-        if (!hasTriggeredFireSword && hp <= phase3HealthThreshold && hp > 0)
+        else if (!triggeredPhase3 && hp <= phase3Threshold && hp > 0)
         {
-            Debug.Log("[CyberPig] Activating Phase 3!");
-            hasTriggeredFireSword = true;
-            InterruptActions();
-            StartCoroutine(StartPhase3());
+            triggeredPhase3 = true;
+            StartCoroutine(TriggerPhase3());
         }
     }
 
-    IEnumerator StartPhase2()
+    IEnumerator TriggerPhase2()
     {
-       
-        currentState = BossState.Casting;
+        StopCurrentAction();
+        currentState = ActionState.Casting;
+        currentVelocity = Vector2.zero;
 
-        anim?.SetTrigger(animID_Cast);
-        yield return new WaitForSeconds(phase2CastDuration);
-
-        // Apply Phase 2 Buffs
-        decisionDelay *= 0.85f; // Think faster
-        runSpeed *= 1.1f;
-        maxAttackCooldown *= 0.85f; 
-
+        anim.SetTrigger(animID_Cast);
+        
         // Enable skill caster
         if (skillCaster) skillCaster.SetCanCast(true);
-        
-        currentPhase = BossPhase.Phase2_MagicSwordCast;
-        currentState = BossState.Idle;
+        yield return WaitForCurrentAnimation();
+
+
+        // Buff stats
+        walkSpeed *= 1.15f;
+        attackCooldown *= 0.85f;
+
+        currentState = ActionState.Idle;
     }
 
-    IEnumerator StartPhase3()
+    IEnumerator TriggerPhase3()
     {
-      
-        currentState = BossState.Casting;
+        StopCurrentAction();
+        currentState = ActionState.Casting;
+        currentVelocity = Vector2.zero;
 
-        anim?.SetTrigger(animID_Cast);
-        yield return new WaitForSeconds(phase3CastDuration);
+        anim.SetTrigger(animID_Cast);
         
-        // Fire Mode
-        anim?.SetBool(animID_FireMode, true);
+        // Fire mode
+        anim.SetBool(animID_FireMode, true);
+       
+        yield return WaitForCurrentAnimation();
 
-        // Apply Phase 3 Buffs (Berserk)
-        decisionDelay *= 0.7f;
-        burstSpeed *= 1.25f;
-        minAttackCooldown *= 0.6f;
-        maxAttackCooldown *= 0.6f;
-        lungeSpeed *= 1.3f;
 
-        currentPhase = BossPhase.Phase3_FireSword;
-        currentState = BossState.Idle;
+        // Buff stats (berserk)
+        dashSpeed *= 1.25f;
+        lungeSpeed *= 1.2f;
+        attackCooldown *= 0.6f;
+        postActionPause *= 0.7f;
+
+        currentState = ActionState.Idle;
     }
 
-    void InterruptActions()
+    void StopCurrentAction()
     {
         StopAllCoroutines();
-        // Be careful not to stop the routine calling this one if it's a coroutine... 
-        // But here we are calling from CheckPhaseTransitions -> void.
-        // If CheckPhaseTransitions was valid, we want to override existing behavior.
-        
-        isDeciding = false;
-        isAttacking = false;
-        currentVelocity = Vector2.zero;
-    }
-
-    void OnBossDeath(EnemyHealthController controller)
-    {
-        if (!isDead)
-        {
-            InterruptActions();
-            StartCoroutine(DeathRoutine());
-        }
-    }
-
-    IEnumerator DeathRoutine()
-    {
-        isDead = true;
-        currentState = BossState.Dead;
-        // InterruptActions(); // Moved to OnBossDeath
-        
-        rb.velocity = Vector2.zero;
-        rb.simulated = false; // Disable physics to prevent pushing corpse
-
-        anim?.SetTrigger(animID_Dead);
-        yield return new WaitForSeconds(deathAnimationDuration);
-
-        // Finally destroy
-        healthController.PerformDefaultDeath();
+        if (swordHitbox360) swordHitbox360.SetActive(false);
     }
     #endregion
 
-    #region VISUALS
+    #region DEATH
+    void OnDeath(EnemyHealthController controller)
+    {
+        if (currentState == ActionState.Dead) return;
+
+        StopCurrentAction();
+        currentState = ActionState.Dead;
+        currentVelocity = Vector2.zero;
+        rb.velocity = Vector2.zero;
+        rb.simulated = false;
+
+        anim.SetTrigger(animID_Dead);
+        controller.PerformDefaultDeath();
+       
+    }
+    #endregion
+
+    #region UTILITIES
     void UpdateFacing()
+    {
+        if (IsBusy || !player) return;
+        FacePlayer();
+    }
+
+    /// <summary>
+    /// Immediately face the player. Call this before starting an action.
+    /// </summary>
+    void FacePlayer()
     {
         if (!player) return;
 
@@ -598,39 +476,37 @@ public class CyberPig : MonoBehaviour
     void Flip()
     {
         isFacingRight = !isFacingRight;
-        spriteRenderer.flipX = !isFacingRight;
-        
-        if (skillCaster)
-            skillCaster.FlipSpawnPoint(isFacingRight);
+
+        // Flip entire transform (affects all children - hitboxes, VFX, etc.)
+        Vector3 scale = transform.localScale;
+        scale.x *= -1f;
+        transform.localScale = scale;
+
+        // Also notify skill caster if it needs special handling
+        if (skillCaster) skillCaster.FlipSpawnPoint(isFacingRight);
     }
 
-    void UpdateAnimations()
+   
+    Vector2 GetFacingDirection()
     {
-        if (!anim) return;
-
-        anim.SetBool(animID_Idle, currentState == BossState.Idle || currentState == BossState.Thinking);
-        anim.SetBool(animID_Chase, currentState == BossState.Moving);
-        
-        if (hasParam_MoveSpeed)
-        {
-            anim.SetFloat(animID_MoveSpeed, currentVelocity.magnitude);
-        }
-        
-        // Note: Attack, Hurt, Cast, Dead are Triggers handled in logic
+        return isFacingRight ? Vector2.right : Vector2.left;
     }
     #endregion
 
     #region GIZMOS
     void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, aggroRange);
-        
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, attackRange);
-        
-        Gizmos.color = new Color(1, 0.5f, 0); // Orange
-        Gizmos.DrawWireSphere(transform.position, dashAttackRange);
+
+        Gizmos.color = Color.magenta;
+        Gizmos.DrawWireSphere(transform.position, lungeRange);
+
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(transform.position, dashRange);
+
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, aggroRange);
     }
     #endregion
 }
