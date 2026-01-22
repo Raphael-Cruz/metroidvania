@@ -7,4 +7,5 @@ public class GameData
     public System.Collections.Generic.List<string> collectedRelics = new();
     public System.Collections.Generic.List<string> collectedSkills = new();
     public System.Collections.Generic.List<string> permanentDeadEnemies = new();
+    public System.Collections.Generic.List<string> completedEvents = new();
 }

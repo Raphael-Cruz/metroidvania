@@ -57,6 +57,9 @@ public class CyberPig : MonoBehaviour
     [SerializeField] private string param_Cast = "isCastingMagicSword";
     [SerializeField] private string param_FireMode = "hasFireSword";
     [SerializeField] private string param_Dead = "Dead";
+   
+    [Header("Door Lever")]
+    [SerializeField] private DoorLever CyberDoor;
 
     private int animID_IsRunning;
     private int animID_IsIdle;
@@ -77,6 +80,9 @@ public class CyberPig : MonoBehaviour
     private float lastAttackTime;
     private bool isFacingRight = true;
     private Vector2 currentVelocity;
+
+    private DoorLever door;
+
     #endregion
 
     #region INITIALIZATION
@@ -448,7 +454,15 @@ public class CyberPig : MonoBehaviour
 
         anim.SetTrigger(animID_Dead);
         controller.PerformDefaultDeath();
-       
+
+    if (CyberDoor != null)
+    {
+        CyberDoor.OpenDoor();
+    }
+    else
+    {
+        Debug.LogWarning("CyberPig died but no DoorLever was assigned in the Inspector!");
+    }
     }
     #endregion
 
