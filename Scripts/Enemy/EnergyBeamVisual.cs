@@ -45,10 +45,25 @@ void Awake()
 
     void Update()
     {
+        // SELF-REPAIR: If references are missing, try to find them.
+        if (player == null || pull == null)
+        {
+            var p = FindObjectOfType<PlayerChainPull>();
+            if (p != null)
+            {
+                player = p.transform;
+                pull = p;
+                Debug.Log($"[EnergyBeamVisual] Auto-found Player: {player.name}");
+            }
+        }
+
         if (hookCollider == null || player == null)
         {
-            line.enabled = false;
-            line.positionCount = 0;
+            if (line.enabled)
+            {
+                line.enabled = false;
+                line.positionCount = 0;
+            }
             return;
         }
 

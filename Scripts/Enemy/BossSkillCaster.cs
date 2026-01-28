@@ -23,12 +23,16 @@ public class BossSkillCaster : MonoBehaviour
         nextCastTime = Time.time + startDelay;
     }
     
+    
     private void Update()
     {
+        // Only cast if enabled AND on timer
         if (canCast && Time.time >= nextCastTime)
         {
             CastCircleSkill();
-            ScheduleNextCast();
+            
+            // Disable after casting (CyberPig will re-enable when needed)
+            canCast = false;
         }
     }
     

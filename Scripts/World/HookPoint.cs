@@ -33,10 +33,9 @@ private void OnTriggerEnter2D(Collider2D other)
         other.GetComponent<PlayerChainPull>() ??
         other.GetComponentInParent<PlayerChainPull>() ??
         other.GetComponentInChildren<PlayerChainPull>();
+
     if (pull != null)
         pull.SetHook(this);
-
-
 
     if (EnergyBeamVisual.Instance != null)
         EnergyBeamVisual.Instance.SetHook(hookCollider);

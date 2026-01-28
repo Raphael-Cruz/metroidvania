@@ -135,10 +135,10 @@ if (abilities != null)
 
 private void HandleGrounding()
 {
-    // 1. Check if the circle actually overlaps ground
+    // Check if the circle actually overlaps ground
     bool touchingGround = Physics2D.OverlapCircle(groundPoint.position, 0.2f, whatIsGround);
     
-    // 2. We only want to be "grounded" if we are NOT moving upwards. 
+    // We only want to be "grounded" if we are NOT moving upwards. 
     // BUT, we add a tiny buffer (-0.1) so small micro-fluctuations don't break it.
     bool notRising = theRB.velocity.y <= 0.1f; 
     
@@ -183,23 +183,13 @@ private void OnDrawGizmos()
     {
         if (!InGameMenuController.isGamePaused) 
     {
+        CheckSanity(); // Global NaN Guard
         HandleGrounding();
        
 
        
         if (!canMove) return;
-/*
-        // -----------------------
-        // JUMP BUFFER & DASH COOLDOWN
-        // -----------------------
-        if (Input.GetButtonDown("Jump"))
-            jumpBufferCounter = jumpBufferTime;
-        else if (jumpBufferCounter > 0)
-            jumpBufferCounter -= Time.deltaTime;
 
-        if (dashRechargeCounter > 0)
-            dashRechargeCounter -= Time.deltaTime;
-*/
         // -----------------------
         // DASH INPUT & PROCESSING
         // -----------------------
@@ -239,33 +229,7 @@ private void OnDrawGizmos()
            
         }
 
-/*
-        // -----------------------
-        // JUMP LOGIC
-        // -----------------------
-        if (Input.GetKeyDown(KeyCode.Mouse2) && coyoteCounter > 0 && abilities.canSuperJump)
-        {
-            DoSuperJump();
-        }
-        else if (jumpBufferCounter > 0)
-        {
-            if (coyoteCounter > 0)
-            {
-                DoJump();
-            }
-            else if (canDoubleJump && abilities.canDoubleJump)
-            {
-                canDoubleJump = false;
-                anim.SetTrigger("doubleJump");
-                DoJump();
-            }
-        }
 
-        if (Input.GetButtonUp("Jump") && theRB.velocity.y > 0f)
-        {
-            theRB.velocity = new Vector2(theRB.velocity.x, theRB.velocity.y * 0.5f);
-        }
-*/
         // -----------------------
         // SHOOTING
         // -----------------------
@@ -343,24 +307,7 @@ if (abilities.canMissile || abilities.canShield)
 
     yield return null; 
 }
-/*
-    private void DoJump()
-    {
-        theRB.velocity = new Vector2(theRB.velocity.x, jumpForce);
-        coyoteCounter = 0;
-        jumpBufferCounter = 0;
-    }
 
-    private void DoSuperJump()
-    {
-        if (laserBeam != null && laserPoint != null)
-            Instantiate(laserBeam, laserPoint.position, laserPoint.rotation, laserPoint);
-
-        theRB.velocity = new Vector2(theRB.velocity.x, superJumpForce);
-        coyoteCounter = 0;
-        jumpBufferCounter = 0;
-    }
-*/
     private void ShowAfterImage()
     {
         SpriteRenderer image = Instantiate(afterImage, transform.position, transform.rotation);
@@ -413,6 +360,26 @@ private void UpdateAnimator()
     anim.SetBool("isRising", isRising && !isHighJump);
     anim.SetBool("isFalling", isFalling);
 }
+
+    // SAFETY GUARD: Prevents NaN (Not a Number) from crashing the Camera/Game
+    void CheckSanity()
+    {
+        if (theRB != null && (float.IsNaN(theRB.velocity.x) || float.IsNaN(theRB.velocity.y)))
+        {
+            Debug.LogError($"[PlayerMovement] NaN detected in Velocity! Resetting. Prev Velocity: {theRB.velocity}");
+            theRB.velocity = Vector2.zero;
+        }
+
+        if (float.IsNaN(transform.position.x) || float.IsNaN(transform.position.y) || float.IsNaN(transform.position.z))
+        {
+            Debug.LogError($"[PlayerMovement] NaN detected in Position! Resetting to safe point. Prev Pos: {transform.position}");
+            // Attempt to recover validity - this is a last resort
+            if (RespawnController.instance != null)
+                transform.position = RespawnController.instance.GetRespawnPoint();
+            else
+                transform.position = Vector3.zero;
+        }
+    }
 }
 
 

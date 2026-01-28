@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class DoorController : MonoBehaviour
 {
-    public enum ExitDirection { Left, Right, Up, Down }
+    public enum ExitDirection { Left, Right, Up, Down, UpRight, UpLeft, DownRight, DownLeft }
 
     [Header("Configuração da Porta")]
     public string sceneToLoad;      
@@ -35,6 +35,10 @@ public class DoorController : MonoBehaviour
             case ExitDirection.Right: offset = Vector3.right * distancePath; break;
             case ExitDirection.Up:    offset = Vector3.up * distancePath; break;
             case ExitDirection.Down:  offset = Vector3.down * distancePath; break;
+            case ExitDirection.UpRight: offset = (Vector3.up + Vector3.right).normalized * distancePath; break;
+            case ExitDirection.UpLeft: offset = (Vector3.up + Vector3.left).normalized * distancePath; break;
+            case ExitDirection.DownRight: offset = (Vector3.down + Vector3.right).normalized * distancePath; break;
+            case ExitDirection.DownLeft: offset = (Vector3.down + Vector3.left).normalized * distancePath; break;
         }
 
         return transform.position + offset;

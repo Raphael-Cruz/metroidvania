@@ -16,12 +16,11 @@ public class PlayerChainPull : MonoBehaviour
     private PlayerAbilityTracker abilities;
     private HookPoint currentHook;
     private PlayerMovement movement;
+    private Jump jumpScript;
 
     private float pullTimer;
     private float cooldownTimer;
     private bool pulling;
-
- 
 
     // ===== PUBLIC READ-ONLY STATE (FOR VISUALS) =====
     public bool IsPulling => pulling;
@@ -35,22 +34,15 @@ public class PlayerChainPull : MonoBehaviour
             return currentHook.GetComponent<Collider2D>().bounds.center;
         }
     }
-    
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         abilities = GetComponent<PlayerAbilityTracker>();
         movement = GetComponent<PlayerMovement>();
+        jumpScript = GetComponent<Jump>();
     }
-void Start()
-{
-    if (EnergyBeamVisual.Instance != null)
-    {
-        EnergyBeamVisual.Instance.player = transform;
-        EnergyBeamVisual.Instance.pull = this;
-    }
-}
+// ... (Start method remains same) ...
     void Update()
     {
         if (!abilities.canHook)
@@ -59,12 +51,24 @@ void Start()
         if (cooldownTimer > 0f)
         {
             cooldownTimer -= Time.deltaTime;
-            return;
         }
-
-        if (!pulling && currentHook != null && Input.GetKeyDown(hookKey))
+        else // Only check for input if cooldown is done (or if we are pulling)
         {
-            StartPull();
+            // NEW: Hook Jump / Jump Cancel
+            if (pulling && Input.GetKeyDown(jumpScript.jumpKey)) // Use key from Jump script for consistency
+            {
+                StopPull();
+                if(jumpScript) jumpScript.PerformJump();
+                return;
+            }
+
+            if (Input.GetKeyDown(hookKey))
+            {
+                if (!pulling && currentHook != null)
+                {
+                    StartPull();
+                }
+            }
         }
     }
 
@@ -80,14 +84,33 @@ void Start()
             return;
         }
 
-        Vector2 pullDir = (HookCenter - rb.position).normalized;
+        Vector2 diff = HookCenter - rb.position;
+        
+        // Prevent NaN (Divide by Zero) if we are extremely close to the center
+        if (diff.sqrMagnitude < 0.1f) 
+        {
+            StopPull();
+            rb.velocity = Vector2.zero; // Optional: Stop completely to avoid jitter
+            return;
+        }
+
+        Vector2 pullDir = diff.normalized;
 
         // ONE-WAY pull (no backward force)
         float dot = Vector2.Dot(rb.velocity, pullDir);
         if (dot < 0f)
             rb.velocity -= pullDir * dot;
 
-        rb.AddForce(pullDir * pullForce, ForceMode2D.Force);
+        Vector2 force = pullDir * pullForce;
+        if (!float.IsNaN(force.x) && !float.IsNaN(force.y))
+        {
+            rb.AddForce(force, ForceMode2D.Force);
+        }
+        else
+        {
+            Debug.LogError("[PlayerChainPull] Attempted to apply NaN Force! Aborting.");
+            StopPull();
+        }
     }
 
     void StartPull()
@@ -95,6 +118,10 @@ void Start()
         pulling = true;
         pullTimer = pullDuration;
 
+        if (jumpScript != null)
+        {
+            jumpScript.ResetDoubleJump();
+        }
        
         movement.canMove = false;
     }

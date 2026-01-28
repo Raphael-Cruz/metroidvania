@@ -62,6 +62,8 @@ public class RespawnController : MonoBehaviour
         respawnSceneName = SceneManager.GetActiveScene().name;
     }
 
+    public Vector3 GetRespawnPoint() => respawnPoint;
+
     public void Respawn()
     {
         if (isHandlingRespawn) return;

@@ -13,7 +13,9 @@ public class CyberPig : MonoBehaviour
     [SerializeField] private EnemyHealthController healthController;
     [SerializeField] private BossSkillCaster skillCaster;
     [SerializeField] private GhostTrail ghostTrail;
-    [SerializeField] private GameObject swordHitbox360; // Child object "360 sword plain spiral"
+    [SerializeField] private GameObject swordHitbox360; 
+    [SerializeField] private GameObject LightGlow; 
+    [SerializeField] private GameObject Smoke; 
     #endregion
 
     #region RANGES
@@ -41,10 +43,14 @@ public class CyberPig : MonoBehaviour
     [Header("Health System")]
     [SerializeField] private int maxHealth = 50;
 
+    [Header("Phase 2")]
+    [SerializeField] private float circleSkillChance = 0.25f; // 25% chance to use circle skill in phase 2
+    [SerializeField] private float circleSkillCooldown = 4f;   // Minimum time between circle skills
+
     private int phase2Threshold;
-    private int phase3Threshold;
     private bool triggeredPhase2;
-    private bool triggeredPhase3;
+    private bool isPhase2 = false;
+    private float lastCircleSkillTime = -999f;
     #endregion
 
     #region ANIMATION PARAMETERS
@@ -105,6 +111,8 @@ public class CyberPig : MonoBehaviour
 
         // Ensure 360 sword is inactive at start
         if (swordHitbox360) swordHitbox360.SetActive(false);
+         if (LightGlow ) LightGlow .SetActive(false);
+          if (Smoke ) Smoke .SetActive(false);
     }
 
     bool HasAnimatorParameter(string paramName, AnimatorControllerParameterType type)
@@ -129,7 +137,7 @@ public class CyberPig : MonoBehaviour
 
         int hp = healthController ? healthController.totalhealth : maxHealth;
         phase2Threshold = Mathf.RoundToInt(hp * 0.6f);
-        phase3Threshold = Mathf.RoundToInt(hp * 0.3f);
+       
 
         // Find player if not assigned
         if (!player)
@@ -195,23 +203,51 @@ public class CyberPig : MonoBehaviour
             return;
         }
 
-        // Priority: Swing > Lunge > Dash+Lunge > Walk
+        // PHASE 2: Randomly use circle skill
+        if (isPhase2 && TryPhase2CircleSkill())
+        {
+            return; // Circle skill initiated
+        }
+
+        // Standard combat logic with improved range prioritization
+        // Always prioritize swing if player is very close
         if (dist <= attackRange)
         {
             StartCoroutine(DoSwingAttack());
         }
         else if (dist <= lungeRange)
         {
+            // 50% chance to lunge directly, 50% to do nothing (allows swing if player moves closer)
             StartCoroutine(DoLunge());
         }
         else if (dist <= dashRange)
         {
-            StartCoroutine(DoDashLungeCombo());
+            // Randomly choose between dash+swing or dash+lunge
+            if (Random.value < 0.4f)
+                StartCoroutine(DoDashSwingCombo());
+            else
+                StartCoroutine(DoDashLungeCombo());
         }
         else
         {
             WalkTowardPlayer();
         }
+    }
+
+    bool TryPhase2CircleSkill()
+    {
+        // Check if on cooldown
+        if (Time.time < lastCircleSkillTime + circleSkillCooldown)
+            return false;
+
+        // Random chance to use circle skill
+        if (Random.value < circleSkillChance)
+        {
+            StartCoroutine(CastCircleSkill());
+            return true;
+        }
+
+        return false;
     }
 
     void WalkTowardPlayer()
@@ -249,11 +285,14 @@ public class CyberPig : MonoBehaviour
         //animation event first "damage" frame
         public void OpenSwordHitbox() {
             if (swordHitbox360) swordHitbox360.SetActive(true);
+             
         }
         //animation event last "damage" frame
         public void CloseSwordHitbox() {
             if (swordHitbox360) swordHitbox360.SetActive(false);
+              
         }
+
 
     IEnumerator DoLunge()
     {
@@ -320,18 +359,28 @@ public class CyberPig : MonoBehaviour
 
         currentVelocity = Vector2.zero;
 
-        // Brief pause between dash and lunge
+        // Brief pause between dash and next action
         yield return new WaitForSeconds(0.05f);
 
-        // Check if we're now in lunge range
+        // Re-check distance - prioritize swing if player is very close
         float dist = Vector2.Distance(transform.position, player.position);
-        if (dist <= lungeRange)
+        
+        if (dist <= attackRange)
         {
-            // Re-face player for lunge accuracy
+            // Player is in swing range - swing instead of lunge
+            FacePlayer();
+            currentState = ActionState.Swinging;
+            lastAttackTime = Time.time;
+
+            anim.SetTrigger(animID_Swinging);
+            yield return WaitForCurrentAnimation();
+        }
+        else if (dist <= lungeRange)
+        {
+            // Player is in lunge range - lunge
             FacePlayer();
             Vector2 lungeDir = GetFacingDirection();
 
-            // LUNGE PHASE (immediate follow-up)
             currentState = ActionState.Lunging;
             lastAttackTime = Time.time;
 
@@ -347,6 +396,57 @@ public class CyberPig : MonoBehaviour
             }
 
             currentVelocity = Vector2.zero;
+            yield return WaitForCurrentAnimation();
+        }
+
+        // Post-action pause
+        yield return new WaitForSeconds(postActionPause);
+
+        currentState = ActionState.Idle;
+    }
+
+    IEnumerator DoDashSwingCombo()
+    {
+        // Set attack time at START to prevent immediate follow-up
+        lastAttackTime = Time.time;
+
+        // Face player before dashing
+        FacePlayer();
+        Vector2 dashDir = GetFacingDirection();
+
+        // DASH PHASE
+        currentState = ActionState.Dashing;
+        currentVelocity = Vector2.zero;
+
+        anim.SetTrigger(animID_Dashing);
+
+        float elapsed = 0f;
+        while (elapsed < dashDuration)
+        {
+            currentVelocity = dashDir * dashSpeed;
+            
+            // Ghost trail effect
+            if (ghostTrail) ghostTrail.TrySpawnGhost(spriteRenderer, transform);
+            
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        currentVelocity = Vector2.zero;
+
+        // Brief pause
+        yield return new WaitForSeconds(0.05f);
+
+        // Check if we're close enough to swing
+        float dist = Vector2.Distance(transform.position, player.position);
+        if (dist <= attackRange + 1f) // Slightly more lenient range for combo
+        {
+            // SWING PHASE
+            FacePlayer();
+            currentState = ActionState.Swinging;
+            lastAttackTime = Time.time;
+
+            anim.SetTrigger(animID_Swinging);
             yield return WaitForCurrentAnimation();
         }
 
@@ -379,15 +479,10 @@ public class CyberPig : MonoBehaviour
         if (!healthController) return;
         int hp = healthController.totalhealth;
 
-        if (!triggeredPhase2 && hp <= phase2Threshold && hp > phase3Threshold)
+        if (!triggeredPhase2 && hp <= phase2Threshold)
         {
             triggeredPhase2 = true;
             StartCoroutine(TriggerPhase2());
-        }
-        else if (!triggeredPhase3 && hp <= phase3Threshold && hp > 0)
-        {
-            triggeredPhase3 = true;
-            StartCoroutine(TriggerPhase3());
         }
     }
 
@@ -397,12 +492,14 @@ public class CyberPig : MonoBehaviour
         currentState = ActionState.Casting;
         currentVelocity = Vector2.zero;
 
+        // Trigger CAST animation (should play animation events for Light/Smoke)
         anim.SetTrigger(animID_Cast);
         
-        // Enable skill caster
-        if (skillCaster) skillCaster.SetCanCast(true);
+        // Wait for CAST animation to complete BEFORE enabling phase 2
         yield return WaitForCurrentAnimation();
 
+        // NOW enable phase 2 (circle skill can be used randomly in combat)
+        isPhase2 = true;
 
         // Buff stats
         walkSpeed *= 1.15f;
@@ -411,33 +508,68 @@ public class CyberPig : MonoBehaviour
         currentState = ActionState.Idle;
     }
 
-    IEnumerator TriggerPhase3()
+    IEnumerator CastCircleSkill()
     {
-        StopCurrentAction();
         currentState = ActionState.Casting;
         currentVelocity = Vector2.zero;
+        lastCircleSkillTime = Time.time;
+        lastAttackTime = Time.time; // Prevent immediate follow-up
 
+        // Face player before casting
+        FacePlayer();
+
+        // Trigger CAST animation
         anim.SetTrigger(animID_Cast);
-        
-        // Fire mode
-        anim.SetBool(animID_FireMode, true);
-       
+
+        // Wait for animation to complete
         yield return WaitForCurrentAnimation();
 
+        // Now actually cast the skill through the skill caster
+        if (skillCaster)
+        {
+            // Temporarily enable caster for one shot
+            skillCaster.SetCanCast(true);
+            
+            // Wait a frame to let it cast
+            yield return new WaitForSeconds(0.1f);
+            
+            // Disable it again (we control when to cast via TryPhase2CircleSkill)
+            skillCaster.SetCanCast(false);
+        }
 
-        // Buff stats (berserk)
-        dashSpeed *= 1.25f;
-        lungeSpeed *= 1.2f;
-        attackCooldown *= 0.6f;
-        postActionPause *= 0.7f;
+        // Post-action pause
+        yield return new WaitForSeconds(postActionPause);
 
         currentState = ActionState.Idle;
     }
+    
+     public void ActivateLight() {
+            if (LightGlow) LightGlow.SetActive(true);
+            
+        }
+
+        public void DeactivateLight() {
+            if (LightGlow) LightGlow.SetActive(false);
+            
+        }
+
+        public void ActivateSmoke() {
+            if (Smoke) Smoke.SetActive(true);
+        }
+
+        public void DeactivateSmoke() {
+            if (Smoke) Smoke.SetActive(false);
+        }
+        
+
+  
 
     void StopCurrentAction()
     {
         StopAllCoroutines();
         if (swordHitbox360) swordHitbox360.SetActive(false);
+        if (LightGlow) LightGlow.SetActive(false);
+        if (Smoke) Smoke.SetActive(false);
     }
     #endregion
 

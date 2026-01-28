@@ -20,6 +20,9 @@ public class Jump : MonoBehaviour
     public float maxFallSpeed = 20f;
 
     [Header("Assist Settings")]
+    [Tooltip("Multiplier for double jump height")]
+    public float doubleJumpMultiplier = 0.8f;
+
     [Tooltip("Time window after leaving ground where jump still works")]
     public float coyoteTime = 0.12f;
     
@@ -35,20 +38,24 @@ public class Jump : MonoBehaviour
     public float groundCheckRadius = 0.2f;
     public LayerMask groundLayer;
 
+    private PlayerAbilityTracker abilities;
+    private bool canDoubleJump;
+
     private Rigidbody2D theRB;
     private bool isGrounded;
 
-    // Timers for assist mechanics (now handled in FixedUpdate for consistency)
+    // Timers
     private float coyoteCounter;
     private float jumpBufferCounter;
 
-    // Input state flags
+    // Input flags
     private bool jumpPressedThisFrame;
     private bool jumpHeldThisFrame;
 
     void Awake()
     {
         theRB = GetComponent<Rigidbody2D>();
+        abilities = GetComponent<PlayerAbilityTracker>(); // Get abilities
         theRB.gravityScale = gravityScale;
         
         // Validate groundCheck reference
@@ -75,7 +82,10 @@ public class Jump : MonoBehaviour
 
         // COYOTE TIME - allows jumping shortly after leaving ground
         if (isGrounded)
+        {
             coyoteCounter = coyoteTime;
+            canDoubleJump = true; // Reset double jump when grounded
+        }
         else
             coyoteCounter -= Time.fixedDeltaTime;
 
@@ -91,11 +101,26 @@ public class Jump : MonoBehaviour
         }
 
         // EXECUTE JUMP - using AddForce for smoother physics interaction
-        if (jumpBufferCounter > 0 && coyoteCounter > 0)
+        if (jumpBufferCounter > 0)
         {
-            PerformJump();
-            jumpBufferCounter = 0; // Clear buffer
-            coyoteCounter = 0;     // Clear coyote time
+            // Normal Jump
+            if (coyoteCounter > 0)
+            {
+                PerformJump();
+                jumpBufferCounter = 0; // Clear buffer
+                coyoteCounter = 0;     // Clear coyote time
+            }
+            // Double Jump
+            else if (canDoubleJump && abilities != null && abilities.canDoubleJump)
+            {
+                PerformJump(doubleJumpMultiplier);
+                canDoubleJump = false; // Consume double jump
+                jumpBufferCounter = 0; // Clear buffer
+                
+                // Optional: You might want a specific animation trigger here
+                 var anim = GetComponentInChildren<Animator>();
+                 if(anim) anim.SetTrigger("doubleJump");
+            }
         }
 
         // Apply enhanced jump physics
@@ -105,7 +130,7 @@ public class Jump : MonoBehaviour
         ClampFallSpeed();
     }
 
-    void PerformJump()
+    public void PerformJump(float multiplier = 1f)
     {
         // Cancel any existing vertical velocity before applying jump force
         // This ensures consistent jump height regardless of current velocity
@@ -113,16 +138,24 @@ public class Jump : MonoBehaviour
         
         // Apply jump force using AddForce for more natural physics
         // Using Impulse mode for instant velocity change (similar to setting velocity but additive)
-        theRB.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+        theRB.AddForce(Vector2.up * jumpForce * multiplier, ForceMode2D.Impulse);
+    }
+
+    public void ResetDoubleJump()
+    {
+        canDoubleJump = true;
     }
 
     void ApplyBetterJumpPhysics()
     {
+        // Safety Check
+        if (float.IsNaN(theRB.velocity.y)) return;
+
         // FALLING - apply extra gravity for snappier, more responsive falls
         if (theRB.velocity.y < 0)
         {
             theRB.velocity += Vector2.up * Physics2D.gravity.y *
-                              (fallGravityMultiplier - 1f) * Time.fixedDeltaTime;
+                              (fallGravityMultiplier - 1.3f) * Time.fixedDeltaTime;
         }
         // RISING + RELEASED JUMP - enables variable jump height
         // Releasing jump button early cuts the jump short
@@ -157,6 +190,8 @@ public class Jump : MonoBehaviour
             groundLayer
         );
     }
+
+
 
     void OnDrawGizmosSelected()
     {
