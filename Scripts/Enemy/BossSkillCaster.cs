@@ -24,45 +24,39 @@ public class BossSkillCaster : MonoBehaviour
     }
     
     
+    // Removed Update loop casting logic to allow direct control by CyberPig
     private void Update()
     {
-        // Only cast if enabled AND on timer
-        if (canCast && Time.time >= nextCastTime)
-        {
-            CastCircleSkill();
-            
-            // Disable after casting (CyberPig will re-enable when needed)
-            canCast = false;
-        }
     }
     
-private void CastCircleSkill()
-{
-    if (circleSkillPrefab == null) return;
-
-    Vector3 spawnPosition = skillSpawnPoint != null ? skillSpawnPoint.position : transform.position;
-    
-    // Cria o objeto
-    GameObject skill = Instantiate(circleSkillPrefab, spawnPosition, Quaternion.identity);
-    
-    // ATIVA o objeto (isso resolve o erro da Coroutine)
-    skill.SetActive(true);
-    
-    CircleSkillBehavior behavior = skill.GetComponent<CircleSkillBehavior>();
-    if (behavior != null)
+    public GameObject CastCircleSkill()
     {
-        GameObject player = GameObject.FindWithTag("Player");
-        Vector3 targetPos = player != null ? player.transform.position : transform.position + transform.right;
+        if (circleSkillPrefab == null) return null;
+    
+        Vector3 spawnPosition = skillSpawnPoint != null ? skillSpawnPoint.position : transform.position;
         
-        behavior.Initialize(gameObject, targetPos);
+        // Create the object
+        GameObject skill = Instantiate(circleSkillPrefab, spawnPosition, Quaternion.identity);
+        
+        skill.SetActive(true);
+        
+        CircleSkillBehavior behavior = skill.GetComponent<CircleSkillBehavior>();
+        if (behavior != null)
+        {
+            GameObject player = GameObject.FindWithTag("Player");
+            Vector3 targetPos = player != null ? player.transform.position : transform.position + transform.right;
+            
+            behavior.Initialize(gameObject, targetPos);
+        }
+        
+        return skill;
     }
-}
 
 public void FlipSpawnPoint(bool facingRight)
 {
     if (skillSpawnPoint != null)
     {
-        // Se você usa o método de inverter a posição local:
+        // usa o método de inverter a posição local:
         Vector3 localPos = skillSpawnPoint.localPosition;
         
         // Garante que o X seja positivo se estiver para a direita, e negativo para a esquerda
@@ -80,7 +74,7 @@ public void FlipSpawnPoint(bool facingRight)
         nextCastTime = Time.time + randomInterval;
     }
     
-    // Call this method to enable/disable skill casting (e.g., during boss phases)
+    // Call this method to enable/disable skill casting (during boss phases)
     public void SetCanCast(bool enabled)
     {
         canCast = enabled;

@@ -35,7 +35,7 @@ public class bulletController : MonoBehaviour
             Instantiate(impactEffect, transform.position, Quaternion.identity);
 
         Destroy(gameObject);
-    }
+    } 
 
     private void OnBecameInvisible()
     {

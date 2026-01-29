@@ -83,13 +83,26 @@ public class CircleSkillBehavior : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        HandleCollision(collision.gameObject);
+    }
+    
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        HandleCollision(collision.gameObject);
+    }
+
+    private void HandleCollision(GameObject obj)
+    {
         if (isDestroying) return;
 
-        // Ignora o boss e outras skills
-        if (collision.gameObject == caster || collision.CompareTag("Skill") ) return;
+        // Ignora apenas o caster (para não explodir na saida)
+        if (obj.CompareTag("Ground") || obj.CompareTag("Skill") ||  obj.CompareTag("Bullet") || obj == caster) return;
+
+       
         
-        // Se bater em qualquer outra coisa (Chão, Parede, Player)
-        //no momento o tiro esta quebrando a skill isso nao e desejavel
+        Debug.Log($"[CircleSkill] Collided with {obj.name} (Tag: {obj.tag})");
+        
+        // Se bater em qualquer outra coisa (Chão, Parede, Player, Tiros, etc)
         StartCoroutine(DestroySequence());
     }
 
