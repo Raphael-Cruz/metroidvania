@@ -85,6 +85,9 @@ public Vector2 hangingOffset;
 private bool isOnEdge;
 private bool isHanging;
 
+private bool wasSimulatedBeforeTransition;
+private bool wasAnimatorEnabledBeforeTransition;
+
 public static PlayerMovement instance;
 
  private void Awake()
@@ -179,8 +182,37 @@ private void OnDrawGizmos()
     Gizmos.DrawRay(ledgeCheck.position, Vector2.right * dir * checkDistance);
 }
 
-    private void Update()
+   
+private void Update()
+{
+
+  if (BossBattleState.IsInTransition)
     {
+        Debug.Log("Freezing Battle State");
+        // Cache states once
+        if (!wasSimulatedBeforeTransition)
+        {
+            wasSimulatedBeforeTransition = theRB.simulated;
+            wasAnimatorEnabledBeforeTransition = anim.enabled;
+        }
+
+        theRB.velocity = Vector2.zero;
+        theRB.simulated = false;   // freeze physics
+        anim.enabled = false;      // freeze animation
+        return;
+    }
+    else if (!theRB.simulated)
+    {
+        Debug.Log("Restoring player state");
+        // Restore safely
+        theRB.simulated = wasSimulatedBeforeTransition;
+        anim.enabled = wasAnimatorEnabledBeforeTransition;
+
+        wasSimulatedBeforeTransition = false;
+        wasAnimatorEnabledBeforeTransition = false;
+    }
+
+
         if (!InGameMenuController.isGamePaused) 
     {
         CheckSanity(); // Global NaN Guard

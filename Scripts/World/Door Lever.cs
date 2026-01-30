@@ -16,8 +16,8 @@ public class DoorLever : MonoBehaviour
         else
         {
             // Initial state: Locked
-            if (doorLocked != null) doorLocked.SetActive(true);
-            if (doorOpen != null) doorOpen.SetActive(false);
+            if (doorLocked != null) doorLocked.SetActive(false);
+            if (doorOpen != null) doorOpen.SetActive(true);
         }
     }
 

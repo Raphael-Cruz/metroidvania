@@ -63,8 +63,11 @@ public class CircleSkillBehavior : MonoBehaviour
         Destroy(gameObject, 5f); 
     }
 
-    void FixedUpdate()
-    {
+   void FixedUpdate() {
+    if (BossBattleState.IsInTransition) {
+        rb.velocity = Vector2.zero; // Freeze physics movement
+        return;
+    }
         float angle = Mathf.Atan2(moveDirection.y, moveDirection.x) * Mathf.Rad2Deg;
         transform.rotation = Quaternion.Euler(0, 0, angle);
         

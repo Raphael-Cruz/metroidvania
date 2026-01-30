@@ -39,3 +39,4 @@ public class SceneFader : MonoBehaviour
         UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
     }
 }
+

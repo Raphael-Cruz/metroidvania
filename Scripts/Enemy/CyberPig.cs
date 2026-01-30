@@ -16,6 +16,7 @@ public class CyberPig : MonoBehaviour
     [SerializeField] private GameObject swordHitbox360; 
     [SerializeField] private GameObject LightGlow; 
     [SerializeField] private GameObject Smoke; 
+ 
     
     [Header("Debug")]
     [SerializeField] private bool debugMode = true;
@@ -122,6 +123,9 @@ public class CyberPig : MonoBehaviour
     private float lastAttackTime;
     private bool isFacingRight = true;
     private Vector2 currentVelocity;
+
+
+
     #endregion
 
     #region INITIALIZATION
@@ -203,6 +207,11 @@ public class CyberPig : MonoBehaviour
     #region UPDATE LOOPS
     void Update()
     {
+        if (BossBattleState.IsInTransition)
+{
+    rb.velocity = Vector2.zero;
+    return;
+}
         if (currentState == ActionState.Dead || !player) return;
 
         if (!IsBusy)
@@ -215,6 +224,11 @@ public class CyberPig : MonoBehaviour
 
     void FixedUpdate()
     {
+       if (BossBattleState.IsInTransition)
+{
+    rb.velocity = Vector2.zero;
+    return;
+}
         if (currentState == ActionState.Dead)
         {
             rb.velocity = Vector2.zero;
@@ -543,51 +557,66 @@ public class CyberPig : MonoBehaviour
             phase2Coroutine = StartCoroutine(TriggerPhase2());
         }
     }
+    
+IEnumerator TriggerPhase2()
+{
+    BossBattleState.IsInTransition = true;
 
-    IEnumerator TriggerPhase2()
+    try
     {
-        if (debugMode) Debug.Log("[PHASE2] Starting phase 2 transformation");
-        
-  
-        // manually clean up
-        if (swordHitbox360) swordHitbox360.SetActive(false);
-        if (LightGlow) LightGlow.SetActive(false);
-        if (Smoke) Smoke.SetActive(false);
-        
-        currentState = ActionState.Casting;
-        currentVelocity = Vector2.zero;
+        if (debugMode) Debug.Log("[PHASE2] FORCED TRANSITION START");
 
+        healthController.isInvulnerable = true;
+
+        rb.velocity = Vector2.zero;
+        rb.simulated = false;
+
+        currentState = ActionState.Casting;
         FacePlayer();
 
-        // Play transformation animation
-        if (debugMode) Debug.Log("[PHASE2] Triggering isCastingMagicSword animation");
-        anim.SetTrigger(animID_Cast);
-        
-        // Wait for animation dynamically (no hardcoded time)
-        yield return WaitForCurrentAnimation();
+        anim.ResetTrigger(animID_Swinging);
+        anim.ResetTrigger(animID_Lunge);
+        anim.ResetTrigger(animID_Dashing);
 
-        if (debugMode) Debug.Log("[PHASE2] Animation wait complete - switching to Phase 2");
-
-        // Switch to Phase 2
-        isPhase2 = true;
-        
-        // Tell animator we're in Phase 2
-        if (anim) 
+        if (Screen_Flash_Shake.instance != null) 
         {
-            anim.SetBool(animID_IsPhase2, true);
-            if (debugMode) Debug.Log("[PHASE2] Set isPhase2 bool to true");
+            Debug.Log("[FLASH_DEBUG] Calling TriggerFlash from CyberPig");
+            Screen_Flash_Shake.instance.TriggerFlash(0.5f, 0.8f);
+        }
+        else
+        {
+            Debug.LogError("[FLASH_DEBUG] Screen_Flash_Shake.instance is NULL in CyberPig TriggerPhase2!");
         }
 
-        // Buff stats
+    if (CameraShake.instance != null)
+        CameraShake.instance.Shake(0.5f, 0.3f);
+        
+         isPhase2 = true;
+        anim.SetTrigger(animID_Cast);
+
+        yield return new WaitForSeconds(3.5f);
+
+      
+        anim.SetBool(animID_IsPhase2, true);
+
         walkSpeed *= 1.15f;
         attackCooldown *= 0.85f;
-
-        if (debugMode) Debug.Log("[PHASE2] Phase 2 transformation complete, returning to combat");
-        currentState = ActionState.Idle;
-        
-        // Clear the coroutine reference
-        phase2Coroutine = null;
     }
+    finally
+{
+    rb.simulated = true;
+    rb.velocity = Vector2.zero;
+
+    healthController.isInvulnerable = false;
+    BossBattleState.IsInTransition = false;
+
+    ResetAnimatorToIdle(); 
+
+    currentState = ActionState.Idle;
+
+    if (debugMode) Debug.Log("[PHASE2] TRANSITION COMPLETE");
+}
+}
 
   IEnumerator CastCircleSkill()
 {
@@ -636,23 +665,18 @@ public void TriggerSkillProjectile()
         if (Smoke) Smoke.SetActive(false);
     }
 
-    void StopCurrentAction()
-    {
-      
-        // Stop all coroutines EXCEPT phase2
-        StopAllCoroutines();
-        
-        // Restart phase 2 if it was running
-        if (phase2Coroutine != null)
-        {
-            StartCoroutine(TriggerPhase2());
-        }
-        
-        if (swordHitbox360) swordHitbox360.SetActive(false);
-        if (LightGlow) LightGlow.SetActive(false);
-        if (Smoke) Smoke.SetActive(false);
-        currentVelocity = Vector2.zero;
-    }
+  void StopCurrentAction()
+{
+    StopAllCoroutines();
+    phase2Coroutine = null;
+
+    if (swordHitbox360) swordHitbox360.SetActive(false);
+    if (LightGlow) LightGlow.SetActive(false);
+    if (Smoke) Smoke.SetActive(false);
+
+    currentVelocity = Vector2.zero;
+    currentState = ActionState.Idle;
+}
     #endregion
 
     #region DEATH

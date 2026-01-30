@@ -4,6 +4,7 @@ public class EnemyHealthController : MonoBehaviour
 {
     public int totalhealth = 3;
     public GameObject deathEffect;
+    public bool isInvulnerable = false;
 
     [Header("Persistence")]
     public string enemyID; 
@@ -28,6 +29,11 @@ public class EnemyHealthController : MonoBehaviour
 
     public void DamageEnemy(int damageAmount)
     {
+        if (isInvulnerable || BossBattleState.IsInTransition) 
+    {
+        Debug.Log("Boss is currently in transition - No damage!");
+        return; 
+    }
         totalhealth -= damageAmount;
         
         onDamageCallback?.Invoke(damageAmount);
@@ -75,3 +81,7 @@ public class EnemyHealthController : MonoBehaviour
 
 
 
+public static class BossBattleState
+{
+    public static bool IsInTransition = false;
+}
