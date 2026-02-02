@@ -34,6 +34,7 @@ public void SaveGame(string sceneName, Vector3 pos)
     data.collectedRelics = new System.Collections.Generic.List<string>(WorldState.CollectedRelics);
     data.collectedSkills = new System.Collections.Generic.List<string>(WorldState.UnlockedSkills);
     data.permanentDeadEnemies = new System.Collections.Generic.List<string>(WorldState.PermanentDeadEnemies);   
+    data.completedEvents = new System.Collections.Generic.List<string>(WorldState.CompletedEvents);
 
     string json = JsonUtility.ToJson(data);
     File.WriteAllText(savePath, json);

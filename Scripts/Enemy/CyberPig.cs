@@ -16,6 +16,7 @@ public class CyberPig : MonoBehaviour
     [SerializeField] private GameObject swordHitbox360; 
     [SerializeField] private GameObject LightGlow; 
     [SerializeField] private GameObject Smoke; 
+     [SerializeField] private GameObject BossHealthPanel;   
  
     
     [Header("Debug")]
@@ -45,7 +46,8 @@ public class CyberPig : MonoBehaviour
 
     #region HEALTH & PHASES
     [Header("Health System")]
-    [SerializeField] private int maxHealth = 50;
+    [SerializeField] private int maxHealth = 120;
+    public int MaxHealth => maxHealth;
 
     [Header("Phase 2")]
     [SerializeField] private float circleSkillChance = 0.25f;
@@ -88,7 +90,9 @@ public class CyberPig : MonoBehaviour
     [SerializeField] private string param_IsPhase2 = "isPhase2";
     
     [Header("Door Lever")]
-    [SerializeField] private DoorLever CyberDoor;
+    [SerializeField] private DoorLever CyberDoor2;
+        [Header("Door Lever")]
+    [SerializeField] private DoorLever CyberDoor1;
 
     // Cached animation IDs - Phase 1
     private int animID_IsRunning;
@@ -699,10 +703,16 @@ public void TriggerSkillProjectile()
         anim.SetTrigger(animID_Dead);
         controller.PerformDefaultDeath();
 
-        if (CyberDoor != null)
+        if (CyberDoor1 != null)
         {
-            CyberDoor.OpenDoor();
+            CyberDoor1.OpenDoor();
         }
+        if (CyberDoor2 != null)
+        {
+            CyberDoor2.OpenDoor();
+        }
+
+        if (BossHealthPanel) BossHealthPanel.SetActive(false);
     }
     #endregion
 
