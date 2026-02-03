@@ -14,6 +14,7 @@ public class CyberPig : MonoBehaviour
     [SerializeField] private BossSkillCaster skillCaster;
     [SerializeField] private GhostTrail ghostTrail;
     [SerializeField] private GameObject swordHitbox360; 
+        [SerializeField] private GameObject CrossHitBox; 
     [SerializeField] private GameObject LightGlow; 
     [SerializeField] private GameObject Smoke; 
      [SerializeField] private GameObject BossHealthPanel;   
@@ -163,6 +164,7 @@ public class CyberPig : MonoBehaviour
 
         // Ensure effects are inactive at start
         if (swordHitbox360) swordHitbox360.SetActive(false);
+        if (CrossHitBox) CrossHitBox.SetActive(false);
         if (LightGlow) LightGlow.SetActive(false);
         if (Smoke) Smoke.SetActive(false);
     }
@@ -182,7 +184,21 @@ public class CyberPig : MonoBehaviour
         // Setup health
         if (healthController)
         {
-            if (maxHealth > 0) healthController.totalhealth = maxHealth;
+            // Force reset health on spawn to ensure it's full when the scene reloads
+            // Force reset health on spawn to ensure it's full when the scene reloads
+            if (maxHealth > 0) 
+            {
+                healthController.totalhealth = maxHealth;
+                if (debugMode) Debug.Log($"[CyberPig] Health forced to max: {maxHealth}");
+                
+                // FORCE UI REGISTRATION & UPDATE
+                if (BossHealthUI.instance != null)
+                {
+                   BossHealthUI.instance.gameObject.SetActive(true); // RE-ENABLE THE UI!
+                   BossHealthUI.instance.SetBoss(healthController);
+                   BossHealthUI.instance.RefreshUI();
+                }
+            }
             healthController.onDeathCallback = OnDeath;
             healthController.onDamageCallback = (_) => CheckPhaseTransitions();
         }
@@ -336,8 +352,12 @@ public class CyberPig : MonoBehaviour
     {
         currentState = ActionState.Swinging;
         StopMovementBools();
+        currentState = ActionState.Swinging;
+        StopMovementBools();
+        // Ensure strictly cleared velocity
         currentVelocity = Vector2.zero;
-        lastAttackTime = Time.time;
+        rb.velocity = Vector2.zero;
+
 
         FacePlayer();
 
@@ -349,6 +369,7 @@ public class CyberPig : MonoBehaviour
         yield return WaitForCurrentAnimation();
         yield return new WaitForSeconds(postActionPause);
 
+        lastAttackTime = Time.time;
         currentState = ActionState.Idle;
     }
 
@@ -362,12 +383,25 @@ public class CyberPig : MonoBehaviour
         if (swordHitbox360) swordHitbox360.SetActive(false);
     }
 
+    public void OpenCrossHitbox()
+    {
+        if (CrossHitBox) CrossHitBox.SetActive(true);   
+    }
+
+    public void CloseCrossHitbox()
+    {
+        if (CrossHitBox) CrossHitBox.SetActive(false);
+    }
+
     IEnumerator DoLunge()
     {
         currentState = ActionState.Lunging;
         StopMovementBools();
+        currentState = ActionState.Lunging;
+        StopMovementBools();
+        CloseCrossHitbox(); // Safety: Ensure it's off before we start
         currentVelocity = Vector2.zero;
-        lastAttackTime = Time.time;
+
 
         FacePlayer();
         Vector2 lungeDir = GetFacingDirection();
@@ -391,17 +425,22 @@ public class CyberPig : MonoBehaviour
         yield return WaitForCurrentAnimation();
         yield return new WaitForSeconds(postActionPause);
 
+        lastAttackTime = Time.time;
         currentState = ActionState.Idle;
+       
     }
 
     IEnumerator DoDashLungeCombo()
     {
-        lastAttackTime = Time.time;
+
         FacePlayer();
         Vector2 dashDir = GetFacingDirection();
 
         currentState = ActionState.Dashing;
         StopMovementBools();
+        currentState = ActionState.Dashing;
+        StopMovementBools();
+        CloseCrossHitbox(); // Safety: Ensure it's off before we start
         currentVelocity = Vector2.zero;
 
         if (isPhase2)
@@ -458,17 +497,19 @@ public class CyberPig : MonoBehaviour
 
             currentVelocity = Vector2.zero;
             yield return WaitForCurrentAnimation();
+              
         }
 
         ResetAnimatorToIdle();
         yield return new WaitForSeconds(postActionPause);
 
+        lastAttackTime = Time.time;
         currentState = ActionState.Idle;
     }
 
     IEnumerator DoDashSwingCombo()
     {
-        lastAttackTime = Time.time;
+
         FacePlayer();
         Vector2 dashDir = GetFacingDirection();
 
@@ -510,6 +551,7 @@ public class CyberPig : MonoBehaviour
         ResetAnimatorToIdle();
         yield return new WaitForSeconds(postActionPause);
 
+        lastAttackTime = Time.time;
         currentState = ActionState.Idle;
     }
 
@@ -527,8 +569,13 @@ public class CyberPig : MonoBehaviour
             }
 
             // Now wait for the actual animation to finish playing (normalizedTime >= 1.0)
+            // Fix: Check if normalizedTime DECREASES (wrap around) to detect looping animations and break early
+            float lastNormTime = anim.GetCurrentAnimatorStateInfo(0).normalizedTime;
+
             while (anim.GetCurrentAnimatorStateInfo(0).normalizedTime < 1.0f)
             {
+                float currentNormTime = anim.GetCurrentAnimatorStateInfo(0).normalizedTime;
+
                 // Safety break if state is Idle/Running (means we somehow exited early)
                 if (anim.GetCurrentAnimatorStateInfo(0).IsName("Idle") || 
                     anim.GetCurrentAnimatorStateInfo(0).IsName("Run") ||
@@ -536,6 +583,14 @@ public class CyberPig : MonoBehaviour
                 {
                     break; 
                 }
+
+                // LOOP PROTECTION: If time wraps around (current < last), the animation looped. Break immediately.
+                if (currentNormTime < lastNormTime)
+                {
+                     if (debugMode) Debug.LogWarning("[CyberPig] Animation Loop Detected in triggers! Breaking wait.");
+                     break;
+                }
+                lastNormTime = currentNormTime;
                 
                 yield return null;
             }
@@ -627,7 +682,7 @@ IEnumerator TriggerPhase2()
     currentState = ActionState.Casting;
     currentVelocity = Vector2.zero;
     lastCircleSkillTime = Time.time;
-    lastAttackTime = Time.time;
+
 
     FacePlayer();
     anim.SetTrigger(animID_Circle_Skill_Casting); // Triggers the "Circle_Skill_Casting" animation
@@ -636,6 +691,7 @@ IEnumerator TriggerPhase2()
     // wait for the animation length to return to Idle state
     yield return new WaitForSeconds(0.8f);
    
+    lastAttackTime = Time.time;
     currentState = ActionState.Idle;
 }
 
@@ -674,7 +730,10 @@ public void TriggerSkillProjectile()
     StopAllCoroutines();
     phase2Coroutine = null;
 
+    phase2Coroutine = null;
+
     if (swordHitbox360) swordHitbox360.SetActive(false);
+    if (CrossHitBox) CrossHitBox.SetActive(false); // Fix: Ensure CrossHitBox is also disabled
     if (LightGlow) LightGlow.SetActive(false);
     if (Smoke) Smoke.SetActive(false);
 
@@ -697,6 +756,7 @@ public void TriggerSkillProjectile()
         rb.simulated = false;
 
         if (swordHitbox360) swordHitbox360.SetActive(false);
+        if (CrossHitBox) CrossHitBox.SetActive(false);  
         if (LightGlow) LightGlow.SetActive(false);
         if (Smoke) Smoke.SetActive(false);
 
@@ -712,7 +772,8 @@ public void TriggerSkillProjectile()
             CyberDoor2.OpenDoor();
         }
 
-        if (BossHealthPanel) BossHealthPanel.SetActive(false);
+        if (BossHealthUI.instance != null) 
+            BossHealthUI.instance.gameObject.SetActive(false);
     }
     #endregion
 
@@ -751,6 +812,8 @@ public void TriggerSkillProjectile()
     void ResetAnimatorToIdle()
     {
         if (!anim) return;
+
+        CloseCrossHitbox(); // Fix: Ensure hitbox is closed when resetting to idle
         
         // Ensure "Run" is off
         StopMovementBools();

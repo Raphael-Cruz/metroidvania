@@ -7,7 +7,7 @@ public class DoorLever : MonoBehaviour
     [SerializeField] private GameObject doorOpen1; 
     [SerializeField] private GameObject doorLocked2; 
     [SerializeField] private GameObject doorOpen2;   
-    [SerializeField] private GameObject BossHealthPanel;   
+
 
     [Header("Persistence Settings")]
     public string eventID; 
@@ -17,7 +17,7 @@ public class DoorLever : MonoBehaviour
 
     void Start()
     {
-          if (BossHealthPanel) BossHealthPanel.SetActive(false);
+          if (BossHealthUI.instance != null) BossHealthUI.instance.gameObject.SetActive(false);
         if (string.IsNullOrEmpty(eventID)) return;
 
             {
@@ -101,7 +101,7 @@ public class DoorLever : MonoBehaviour
     
   public void OpenBossHealthPanel()
     {
-        if (BossHealthPanel) BossHealthPanel.SetActive(true);
+        if (BossHealthUI.instance != null) BossHealthUI.instance.gameObject.SetActive(true);
     }
 
     
