@@ -8,8 +8,15 @@ public class DoorLever : MonoBehaviour
     [SerializeField] private GameObject doorLocked2; 
     [SerializeField] private GameObject doorOpen2;   
 
+    public enum InitialBehavior { Default, StayOpenIfBossAlive, StayClosedIfBossAlive }
 
-    [Header("Persistence Settings")]
+    [Header("Settings")]
+    [SerializeField] private bool isBossDoor = false; 
+    [SerializeField] private string bossEnemyID; 
+    [SerializeField] private InitialBehavior initialBehavior = InitialBehavior.Default;
+    
+    [Header("Persistence & ID")]
+    [Tooltip("ID único desta porta (ex: Entrada_Arena, Saida_Arena).")]
     public string eventID; 
     
     private string OpenKey => eventID + "_Opened";
@@ -17,64 +24,81 @@ public class DoorLever : MonoBehaviour
 
     void Start()
     {
-          if (BossHealthUI.instance != null) BossHealthUI.instance.gameObject.SetActive(false);
         if (string.IsNullOrEmpty(eventID)) return;
 
-            {
-   
-            // Initial state: open
-            if (doorLocked1 != null) doorLocked1.SetActive(false);
-            if (doorOpen1 != null) doorOpen1.SetActive(true);
-            if (doorLocked2 != null) doorLocked2.SetActive(false);
-            if (doorOpen2 != null) doorOpen2.SetActive(true);           
-    }
-
-        // PRIORITY 1: If the Boss is dead/Door is permanently opened, it stays open.
+        // 1. Prioridade Máxima: Persistência Permanente (Porta aberta por chave/alavanca/boss morto)
         if (WorldState.CompletedEvents.Contains(OpenKey))
         {
             SetDoorOpenState();
             this.enabled = false; 
+            return;
         }
-        // PRIORITY 2: If it was triggered to close and boss isn't dead yet.
-        else if (WorldState.CompletedEvents.Contains(ClosedKey))
+
+        // 2. Prioridade de Boss: Se o boss está VIVO, o comportamento inicial manda (corrige respawn)
+        if (!string.IsNullOrEmpty(bossEnemyID) && initialBehavior != InitialBehavior.Default)
+        {
+            bool isBossAlive = !WorldState.PermanentDeadEnemies.Contains(bossEnemyID);
+            if (isBossAlive)
+            {
+                ApplyInitialBehavior_Internal();
+                return; 
+            }
+        }
+
+        // 3. Persistência de estado "Fechada" (após entrar na arena mas antes de vencer)
+        if (WorldState.CompletedEvents.Contains(ClosedKey))
         {
             SetDoorClosedState();
-            // We DON'T disable the script here because the boss will open it later!
+        }
+        else
+        {
+            // 4. Estado padrão se nada acima se aplicar
+            SetDoorOpenState();
+        }
+    }
+
+    private void ApplyInitialBehavior_Internal()
+    {
+        if (initialBehavior == InitialBehavior.StayOpenIfBossAlive)
+        {
+            SetDoorOpenState();
+        }
+        else if (initialBehavior == InitialBehavior.StayClosedIfBossAlive)
+        {
+            SetDoorClosedState();
         }
     }
 
     void OnTriggerEnter2D(Collider2D collision) 
     { 
         if (!collision.gameObject.CompareTag("Player")) return; 
-
-        // If the door is already permanently opened by boss, do nothing.
         if (WorldState.CompletedEvents.Contains(OpenKey)) return;
 
-        // Otherwise, close it when player walks through trigger.
         CloseDoor();
-        OpenBossHealthPanel();
+
+        if (isBossDoor) 
+        {
+            // Só ativa se o boss não estiver na lista de mortos permanentes
+            if (!string.IsNullOrEmpty(bossEnemyID) && WorldState.PermanentDeadEnemies.Contains(bossEnemyID))
+            {
+                return;
+            }
+
+            OpenBossHealthPanel();
+        }
     } 
 
     public void OpenDoor()
     {
-        // Update WorldState to OPEN
         WorldState.CompletedEvents.Add(OpenKey);
-        
-        // Remove CLOSED state so it doesn't conflict on reload
         WorldState.CompletedEvents.Remove(ClosedKey);
-
         SetDoorOpenState();
-        Debug.Log($"{eventID} is now permanently opened by Boss.");
-        
-        // Disable this script/trigger forever
         this.enabled = false; 
     }
 
     public void CloseDoor()
     {
-        // Only close if it hasn't been permanently opened yet
         if (WorldState.CompletedEvents.Contains(OpenKey)) return;
-
         SetDoorClosedState();
         
         if (!WorldState.CompletedEvents.Contains(ClosedKey))
@@ -99,11 +123,8 @@ public class DoorLever : MonoBehaviour
         if (doorOpen2 != null) doorOpen2.SetActive(false);
     }
     
-  public void OpenBossHealthPanel()
+    public void OpenBossHealthPanel()
     {
         if (BossHealthUI.instance != null) BossHealthUI.instance.gameObject.SetActive(true);
     }
-
-    
-
 }

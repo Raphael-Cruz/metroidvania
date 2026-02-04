@@ -14,6 +14,8 @@ public class CyberPig : MonoBehaviour
     [SerializeField] private BossSkillCaster skillCaster;
     [SerializeField] private GhostTrail ghostTrail;
     [SerializeField] private GameObject swordHitbox360; 
+        [SerializeField] private GameObject AccessCard; 
+
         [SerializeField] private GameObject CrossHitBox; 
     [SerializeField] private GameObject LightGlow; 
     [SerializeField] private GameObject Smoke; 
@@ -89,11 +91,6 @@ public class CyberPig : MonoBehaviour
     [Header("Animation Parameters - Shared")]
     [SerializeField] private string param_Cast = "isCastingMagicSword";
     [SerializeField] private string param_IsPhase2 = "isPhase2";
-    
-    [Header("Door Lever")]
-    [SerializeField] private DoorLever CyberDoor2;
-        [Header("Door Lever")]
-    [SerializeField] private DoorLever CyberDoor1;
 
     // Cached animation IDs - Phase 1
     private int animID_IsRunning;
@@ -164,6 +161,7 @@ public class CyberPig : MonoBehaviour
 
         // Ensure effects are inactive at start
         if (swordHitbox360) swordHitbox360.SetActive(false);
+        if (AccessCard) AccessCard.SetActive(false);
         if (CrossHitBox) CrossHitBox.SetActive(false);
         if (LightGlow) LightGlow.SetActive(false);
         if (Smoke) Smoke.SetActive(false);
@@ -194,7 +192,6 @@ public class CyberPig : MonoBehaviour
                 // FORCE UI REGISTRATION & UPDATE
                 if (BossHealthUI.instance != null)
                 {
-                   BossHealthUI.instance.gameObject.SetActive(true); // RE-ENABLE THE UI!
                    BossHealthUI.instance.SetBoss(healthController);
                    BossHealthUI.instance.RefreshUI();
                 }
@@ -392,6 +389,10 @@ public class CyberPig : MonoBehaviour
     {
         if (CrossHitBox) CrossHitBox.SetActive(false);
     }
+
+  
+
+  
 
     IEnumerator DoLunge()
     {
@@ -733,7 +734,7 @@ public void TriggerSkillProjectile()
     phase2Coroutine = null;
 
     if (swordHitbox360) swordHitbox360.SetActive(false);
-    if (CrossHitBox) CrossHitBox.SetActive(false); // Fix: Ensure CrossHitBox is also disabled
+    if (CrossHitBox) CrossHitBox.SetActive(false); 
     if (LightGlow) LightGlow.SetActive(false);
     if (Smoke) Smoke.SetActive(false);
 
@@ -758,19 +759,22 @@ public void TriggerSkillProjectile()
         if (swordHitbox360) swordHitbox360.SetActive(false);
         if (CrossHitBox) CrossHitBox.SetActive(false);  
         if (LightGlow) LightGlow.SetActive(false);
+        if (AccessCard != null) 
+        {
+            // Criar a cópia
+            GameObject cardDrop = Instantiate(AccessCard, transform.position, Quaternion.identity);
+            cardDrop.SetActive(true);
+            cardDrop.transform.SetParent(null); 
+            
+            // RESETAR ESCALA: Força 1,1,1 para não herdar escala do Boss/Pai
+            cardDrop.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+            
+            Debug.Log("[CyberPig] Access Card dropado com escala corrigida!");
+        }
         if (Smoke) Smoke.SetActive(false);
 
         anim.SetTrigger(animID_Dead);
         controller.PerformDefaultDeath();
-
-        if (CyberDoor1 != null)
-        {
-            CyberDoor1.OpenDoor();
-        }
-        if (CyberDoor2 != null)
-        {
-            CyberDoor2.OpenDoor();
-        }
 
         if (BossHealthUI.instance != null) 
             BossHealthUI.instance.gameObject.SetActive(false);

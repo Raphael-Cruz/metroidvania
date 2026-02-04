@@ -84,6 +84,10 @@ private IEnumerator RespawnCo()
     if (EnemyStatusManager.instance != null)
         EnemyStatusManager.instance.ResetDefeatedEnemies();
 
+    // HIDE BOSS UI ON DEATH/RESPAWN
+    if (BossHealthUI.instance != null)
+        BossHealthUI.instance.gameObject.SetActive(false);
+
      
     GameObject player = GameObject.FindWithTag("Player");
     if (player != null)
