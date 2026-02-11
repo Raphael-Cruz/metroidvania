@@ -61,7 +61,7 @@ public class RoomTransitionManager : MonoBehaviour
         {
             Vector3 spawnPos = targetDoor.GetSpawnPosition();
 
-            // 🔒 Segurança total
+           
             if (IsNaN(spawnPos))
             {
                 Debug.LogError("SpawnPosition contém NaN!");
