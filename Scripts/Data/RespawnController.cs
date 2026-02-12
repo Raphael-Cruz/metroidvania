@@ -21,6 +21,9 @@ public class RespawnController : MonoBehaviour
     [HideInInspector]
     public bool isTransitioningBetweenRooms = false;
 
+    public bool disableRespawn = false;
+
+
     private void Awake()
     {
         if (instance == null)
@@ -66,6 +69,8 @@ public class RespawnController : MonoBehaviour
 
     public void Respawn()
     {
+         if (disableRespawn) return;
+         
         if (isHandlingRespawn) return;
         StartCoroutine(RespawnCo());
     }

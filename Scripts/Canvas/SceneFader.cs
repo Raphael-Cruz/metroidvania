@@ -7,6 +7,20 @@ public class SceneFader : MonoBehaviour
     public Image fadeImage;
     public float fadeSpeed = 1.0f;
 
+    public static SceneFader instance { get; private set; }
+
+    private void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
     void Start()
     {
         fadeImage.raycastTarget = true;
@@ -38,5 +52,20 @@ public class SceneFader : MonoBehaviour
         }
         UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
     }
+
+ public IEnumerator FadeToBlack(float duration)
+    {
+        float t = 0;
+        Color c = fadeImage.color;
+
+        while (t < duration)
+        {
+            t += Time.deltaTime;
+            c.a = Mathf.Lerp(0, 1, t / duration);
+            fadeImage.color = c;
+            yield return null;
+        }
+    }
+
 }
 

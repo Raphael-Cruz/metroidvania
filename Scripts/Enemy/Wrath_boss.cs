@@ -64,7 +64,7 @@ public class Wrath_boss : MonoBehaviour
 
     // Physics
     private Vector2 currentVelocity;
-    private bool isFacingRight = true; // Assuming default sprite faces right
+    private bool isFacingRight = true; // default sprite faces right
     
     // Cooldown timers
  
@@ -84,13 +84,17 @@ public class Wrath_boss : MonoBehaviour
      private int animID_Dead;
 
   public SpriteRenderer afterImage;
-// public SpriteRenderer theSR; // Redundant, using main spriteRenderer
+
     public Color afterImageColor = Color.red;
     public float afterImageLifetime = 0.5f;
     public float afterImageSpacing = 0.1f;
     private float afterImageCounter;
 
     private bool isDead = false;
+    private bool isCutsceneActive = false;
+    private float groundY;
+
+
 
 
     private enum BossAction
@@ -100,7 +104,8 @@ public class Wrath_boss : MonoBehaviour
         CastFire,
         CastFireProjectile,
         CastSunkidama,
-        Dead
+        Dead,
+        Cutscene
     }
     void Awake()
     {
@@ -158,6 +163,9 @@ public class Wrath_boss : MonoBehaviour
     
     void Update()
     {
+        if (isCutsceneActive)
+    return;
+
         if (currentAction == BossAction.Dead)
     return;
        
@@ -200,6 +208,9 @@ public class Wrath_boss : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (isCutsceneActive)
+    return;
+
         if (currentAction == BossAction.Dead)
     return;
 
@@ -702,6 +713,12 @@ IEnumerator CastSunkidama()
             Flip();
         }
     }
+
+    void FacePlayerCutScene()
+{
+    float dir = Mathf.Sign(player.position.x - transform.position.x);
+    transform.localScale = new Vector3(dir, 1f, 1f);
+}
     
     void Flip()
     {
@@ -732,6 +749,7 @@ public void OnDeath(EnemyHealthController controller)
     isDead = true;
 
     StartCoroutine(DeathSequence(controller));
+    
 }
 
 private IEnumerator DeathSequence(EnemyHealthController controller)
@@ -789,11 +807,10 @@ try
         wrath_bossHealth_UI.instance.gameObject.SetActive(false);
 
 
-        animator.SetTrigger(animID_Dead);
+        yield return
 
-        yield return new WaitForSeconds(3.5f);
+         StartCoroutine(DeathCutscene(controller));
 
-      controller.PerformDefaultDeath();
        
     }
     finally{
@@ -807,4 +824,113 @@ void ResetBossState(){
     currentAction = BossAction.Idle;
 }
 
+
+private IEnumerator DeathCutscene(EnemyHealthController controller)
+{
+   
+
+    animator.ResetTrigger(animID_IsRunning);
+    animator.ResetTrigger(animID_Fire);
+    animator.ResetTrigger(animID_Sunkidama);
+   
+    
+    isCutsceneActive = true;
+    currentAction = BossAction.Cutscene;
+    BossBattleState.IsInTransition = true;
+
+   
+    ResetBossState();
+    rb.velocity = Vector2.zero;
+    rb.simulated = false;
+
+    // --- Disable player control ---
+    PlayerMovement playerController = player.GetComponent<PlayerMovement>();
+    if (playerController != null)
+        playerController.enabled = false;
+
+    // Optional: stop player physics
+    Rigidbody2D playerRb = player.GetComponent<Rigidbody2D>();
+    if (playerRb != null)
+        playerRb.velocity = Vector2.zero;
+    
+
+    // Small dramatic pause
+    yield return new WaitForSeconds(1.5f);
+
+    // --- Walk toward player ---
+    FacePlayerCutScene();
+   animator.SetBool("isWalking", true);
+
+
+float walkSpeed = 2.5f;
+float killDistance = 5f;
+
+while (Mathf.Abs(transform.position.x - player.position.x) > killDistance)
+{
+   
+
+    // Create a target that is at the Player's X, but Boss's current Y
+    Vector3 targetPosition = new Vector3(player.position.x, transform.position.y, transform.position.z);
+
+    // Move only toward that horizontal target
+    transform.position = Vector3.MoveTowards(transform.position, targetPosition, walkSpeed * Time.deltaTime);
+    
+    yield return null; 
+}
+
+animator.SetBool("isWalking", false);
+
+
+   Flip();
+     animator.SetBool("Death",true);
+  
+  
+  yield return new WaitForSeconds(1.6f);
+  
+    if (Screen_Flash_Shake.instance != null)
+        Screen_Flash_Shake.instance.TriggerFlash(0.7f, 1f);
+
+    yield return new WaitForSeconds(0.6f);
+  // --- Kill player permanently ---
+   animator.SetBool("Death",false);
+
+
+   
+    if (player != null)
+       player.gameObject.SetActive(false);
+    
+
+    // --- Fade to black ---
+    yield return new WaitForSeconds(0.8f);
+
+    if (SceneFader.instance != null)
+        yield return SceneFader.instance.FadeToBlack(2f);
+
+
+   controller.PerformDefaultDeath();
+  //   --- Load end screen ---
+    UnityEngine.SceneManagement.SceneManager.LoadScene("credits");
+
+
+ 
+}
+
+void OnAnimatorMove()
+{
+    if (!isCutsceneActive) return;
+    if (rb == null) return;
+
+    Vector3 delta = animator.deltaPosition;
+
+    // Apply root motion X only, lock Y to ground
+    Vector2 newPos = new Vector2(
+        rb.position.x + delta.x,
+        groundY
+    );
+
+    rb.MovePosition(newPos);
+}
+     
+
+       
 }

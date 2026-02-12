@@ -2407,8 +2407,10 @@ MonoBehaviour:
     track: {fileID: 8300000, guid: faa8cab6b82c52e43a823b4fda8b4218, type: 3}
   - sceneName: Scene 4
     track: {fileID: 8300000, guid: 422a1e508f5e28140b9a4e7d9539ae26, type: 3}
+  - sceneName: Scene 15
+    track: {fileID: 8300000, guid: 3d429619ed6121b4aa6dd01de9201758, type: 3}
   - sceneName: Boss Room
-    track: {fileID: 8300000, guid: f95d012ec7e39354886cbf6100a84aec, type: 3}
+    track: {fileID: 8300000, guid: eaaf35f90b2f1f643a86570d7823218d, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
