@@ -12,6 +12,8 @@ public class FireBall : MonoBehaviour
     [SerializeField] private float lifeTime = 5f;
     [SerializeField] private GameObject ballExplosion;
 
+    public bool hasCollided { get; private set; } = false;
+
     private Vector2 moveDirection;
 
     // Called by the boss when spawning
@@ -37,15 +39,19 @@ public class FireBall : MonoBehaviour
 
 private void OnTriggerEnter2D(Collider2D other)
 {
+    if (hasCollided) return; // Evita múltiplas colisões
+
     if (other.CompareTag("Player"))
     {
         other.GetComponent<HealthManager>()?.DamagePlayer(damage);
+        hasCollided = true;
         Explode();
         return;
     }
 
     if (other.CompareTag("Ground"))
     {
+        hasCollided = true;
         Explode();
     }
     
@@ -53,7 +59,8 @@ private void OnTriggerEnter2D(Collider2D other)
 
     private void Explode()
     {
-        Instantiate(ballExplosion, transform.position, Quaternion.identity);
+        if(ballExplosion != null) 
+            Instantiate(ballExplosion, transform.position, Quaternion.identity);
         Destroy(gameObject);
     }
 }

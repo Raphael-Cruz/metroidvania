@@ -48,6 +48,7 @@ public class Wrath_boss : MonoBehaviour
     [SerializeField] private string param_IsRunning = "isRunning";
     [SerializeField] private string param_FireRain = "fireRain";
     [SerializeField] private string param_Sunkidama = "sunkidama";
+    [SerializeField] private string param_Dead = "Dead";
 
     // State tracking
     private bool isCasting = false;
@@ -75,23 +76,31 @@ public class Wrath_boss : MonoBehaviour
     private float decisionTimer = 0f;
     private BossAction currentAction = BossAction.Idle;
     private string currentState;
-
+    
     // Cached animation IDs
      private int animID_IsRunning;
      private int animID_Fire;
      private int animID_Sunkidama;
+     private int animID_Dead;
+
+  public SpriteRenderer afterImage;
+// public SpriteRenderer theSR; // Redundant, using main spriteRenderer
+    public Color afterImageColor = Color.red;
+    public float afterImageLifetime = 0.5f;
+    public float afterImageSpacing = 0.1f;
+    private float afterImageCounter;
+
+    private bool isDead = false;
 
 
-
-    
     private enum BossAction
     {
         Idle,
         Dash,
-   
         CastFire,
         CastFireProjectile,
-        CastSunkidama
+        CastSunkidama,
+        Dead
     }
     void Awake()
     {
@@ -103,6 +112,7 @@ public class Wrath_boss : MonoBehaviour
          animID_IsRunning = Animator.StringToHash(param_IsRunning);
          animID_Fire = Animator.StringToHash(param_FireRain);
          animID_Sunkidama = Animator.StringToHash(param_Sunkidama);
+         animID_Dead = Animator.StringToHash(param_Dead);
 
   
     
@@ -130,10 +140,26 @@ public class Wrath_boss : MonoBehaviour
         {
             rb.constraints = RigidbodyConstraints2D.FreezeAll;
         }
+
+          if (wrath_bossHealth_UI.instance != null)
+                {
+                   wrath_bossHealth_UI.instance.SetBoss(healthController);
+                   wrath_bossHealth_UI.instance.RefreshUI();
+                }
+
+                
+    if (healthController != null)
+    {
+        healthController.onDeathCallback = OnDeath;
     }
+    }
+
+
     
     void Update()
     {
+        if (currentAction == BossAction.Dead)
+    return;
        
         if (!isPhase2 && healthController != null)
         {
@@ -174,6 +200,9 @@ public class Wrath_boss : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (currentAction == BossAction.Dead)
+    return;
+
         if (isDashing) return; 
 
         // Apply velocity
@@ -316,7 +345,9 @@ public class Wrath_boss : MonoBehaviour
         currentVelocity = Vector2.zero;
         if (rb) rb.velocity = Vector2.zero;
 
-        FacePlayer(); // Ensure facing correct way before dash
+        FacePlayer(); 
+        Flip();
+            animator.SetBool("isDashing", true);
         
         // Determine dash direction (left or right based on player position)
         float direction = player.position.x > transform.position.x ? 1f : -1f;
@@ -334,8 +365,23 @@ public class Wrath_boss : MonoBehaviour
         // Dash across the full screen width - nothing can stop this movement
         while (Mathf.Abs(transform.position.x - startX) < screenWidth)
         {
+            if (isDead)
+        yield break;
+        
             // Directly move transform since we're kinematic
             transform.position += (Vector3)(dashDirection * dashSpeed * Time.fixedDeltaTime);
+
+            // Handle After-Image spawning
+            if (afterImage != null)
+            {
+                afterImageCounter -= Time.fixedDeltaTime;
+                if (afterImageCounter <= 0)
+                {
+                    ShowAfterImage();
+                    afterImageCounter = afterImageSpacing;
+                }
+            }
+
             yield return new WaitForFixedUpdate();
         }
         
@@ -346,7 +392,7 @@ public class Wrath_boss : MonoBehaviour
             rb.velocity = Vector2.zero;
         }
         currentVelocity = Vector2.zero;
-        
+        animator.SetBool("isDashing", false);
         // Face player after dash
         FacePlayer();
         
@@ -355,7 +401,22 @@ public class Wrath_boss : MonoBehaviour
         currentAction = BossAction.Idle;
     }
     
+    private void ShowAfterImage()
+    {
+        if (afterImage == null || spriteRenderer == null) return;
 
+        SpriteRenderer image = Instantiate(afterImage, transform.position, transform.rotation);
+        image.sprite = spriteRenderer.sprite;
+        image.transform.localScale = transform.localScale;
+        
+      
+      
+        if (afterImageColor == Color.clear || afterImageColor.a == 0) afterImageColor = Color.red;
+        
+        image.color = afterImageColor;
+        
+        Destroy(image.gameObject, afterImageLifetime);
+    }
     
 
 IEnumerator CastFireRain()
@@ -433,7 +494,7 @@ IEnumerator CastFireProjectile()
     }
 
     // Phase 2: Cast fireball 3 times, Phase 1: Cast once
-    int fireballCount = isPhase2 ? 3 : 1;
+    int fireballCount = isPhase2 ? 2 : 1;
     
     for (int i = 0; i < fireballCount; i++)
     {
@@ -468,12 +529,21 @@ IEnumerator CastFireProjectile()
             Debug.LogError("FireBall script missing on prefab!");
 
         // Keep animation active until fireball is destroyed
-        while (fireball != null)
-            yield return null;
+     
+        yield return new WaitForSeconds(0.3f);
+{
+    FireBall fireballScriptRef = fireball.GetComponent<FireBall>();
+    if (fireballScriptRef != null && fireballScriptRef.hasCollided)
+    {
+        // Se colidiu, paramos de esperar aqui para encerrar a animação do boss mais rápido
+        break; 
+    }
+    yield return null;
+}
             
         // Small delay between fireballs if casting multiple
         if (i < fireballCount - 1)
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.8f);
     }
 
     // Turn off animation AFTER all fireballs are destroyed
@@ -653,4 +723,88 @@ IEnumerator CastSunkidama()
             currentState = stateName;
         }
     }
+public void OnDeath(EnemyHealthController controller)
+{
+  
+    StopAllCoroutines();
+    
+    if (isDead) return;
+    isDead = true;
+
+    StartCoroutine(DeathSequence(controller));
+}
+
+private IEnumerator DeathSequence(EnemyHealthController controller)
+{
+   
+BossBattleState.IsInTransition = true;
+
+try
+    {
+    
+    // Clear skills
+    if (fireballRainSpawner != null) fireballRainSpawner.StopRain();
+    
+    // Destroy lingering projectiles
+    var fireballs = FindObjectsOfType<FireBall>();
+    foreach (var fb in fireballs) Destroy(fb.gameObject);
+    
+    var suns = FindObjectsOfType<Sunkidama>();
+    foreach (var sun in suns) Destroy(sun.gameObject);
+
+    // Reset internal state
+    ResetBossState();
+    
+    currentAction = BossAction.Dead;
+    isCasting = false;
+    isDashing = false;
+
+        healthController.isInvulnerable = true;
+
+        rb.velocity = Vector2.zero;
+        rb.simulated = false; // Stops collisions
+        transform.position = transform.position;
+
+        currentAction = BossAction.Dead;
+        FacePlayer();
+
+        animator.ResetTrigger(animID_IsRunning);
+        animator.ResetTrigger(animID_Fire);
+        animator.ResetTrigger(animID_Sunkidama);
+
+        if (Screen_Flash_Shake.instance != null) 
+        {
+            Debug.Log("[FLASH_DEBUG] Calling TriggerFlash from Wrath");
+            Screen_Flash_Shake.instance.TriggerFlash(0.5f, 0.8f);
+        }
+        else
+        {
+            Debug.LogError("[FLASH_DEBUG] Screen_Flash_Shake.instance is NULL in Wrath TriggerPhase2!");
+        }
+
+    if (CameraShake.instance != null)
+        CameraShake.instance.Shake(0.5f, 0.3f);
+        
+        if (wrath_bossHealth_UI.instance != null) 
+        wrath_bossHealth_UI.instance.gameObject.SetActive(false);
+
+
+        animator.SetTrigger(animID_Dead);
+
+        yield return new WaitForSeconds(3.5f);
+
+      controller.PerformDefaultDeath();
+       
+    }
+    finally{
+        BossBattleState.IsInTransition = false;
+    }
+}
+
+void ResetBossState(){
+    
+    currentVelocity = Vector2.zero;
+    currentAction = BossAction.Idle;
+}
+
 }

@@ -22166,6 +22166,11 @@ Tilemap:
     e31: 0
     e32: 0
     e33: 1
+--- !u!212 &1905218806 stripped
+SpriteRenderer:
+  m_CorrespondingSourceObject: {fileID: 4861608556543295164, guid: 82c1999d0b6713a41a97c854642a47db, type: 3}
+  m_PrefabInstance: {fileID: 6805404839438929809}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1945485588 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2427392998171284835, guid: 2f2792d599287264bac54d1b61d5cd64, type: 3}
@@ -30647,14 +30652,50 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4335801971761873372, guid: 82c1999d0b6713a41a97c854642a47db, type: 3}
+      propertyPath: totalhealth
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 7412198821162546455, guid: 82c1999d0b6713a41a97c854642a47db, type: 3}
       propertyPath: m_Name
       value: Wrath
       objectReference: {fileID: 0}
     - target: {fileID: 9010449816296011952, guid: 82c1999d0b6713a41a97c854642a47db, type: 3}
+      propertyPath: theSR
+      value: 
+      objectReference: {fileID: 1905218806}
+    - target: {fileID: 9010449816296011952, guid: 82c1999d0b6713a41a97c854642a47db, type: 3}
       propertyPath: player
       value: 
       objectReference: {fileID: 1945485588}
+    - target: {fileID: 9010449816296011952, guid: 82c1999d0b6713a41a97c854642a47db, type: 3}
+      propertyPath: afterImage
+      value: 
+      objectReference: {fileID: 1598716009970506064, guid: afb55efebfd1ba947acde8cbe10d8f47, type: 3}
+    - target: {fileID: 9010449816296011952, guid: 82c1999d0b6713a41a97c854642a47db, type: 3}
+      propertyPath: afterImageColor.a
+      value: 0.6666667
+      objectReference: {fileID: 0}
+    - target: {fileID: 9010449816296011952, guid: 82c1999d0b6713a41a97c854642a47db, type: 3}
+      propertyPath: afterImageColor.b
+      value: 0.04209684
+      objectReference: {fileID: 0}
+    - target: {fileID: 9010449816296011952, guid: 82c1999d0b6713a41a97c854642a47db, type: 3}
+      propertyPath: afterImageColor.g
+      value: 0.04209684
+      objectReference: {fileID: 0}
+    - target: {fileID: 9010449816296011952, guid: 82c1999d0b6713a41a97c854642a47db, type: 3}
+      propertyPath: afterImageColor.r
+      value: 0.8113208
+      objectReference: {fileID: 0}
+    - target: {fileID: 9010449816296011952, guid: 82c1999d0b6713a41a97c854642a47db, type: 3}
+      propertyPath: afterImageSpacing
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9010449816296011952, guid: 82c1999d0b6713a41a97c854642a47db, type: 3}
+      propertyPath: afterImageLifetime
+      value: 0.5
+      objectReference: {fileID: 0}
     - target: {fileID: 9010449816296011952, guid: 82c1999d0b6713a41a97c854642a47db, type: 3}
       propertyPath: fireballRainSpawner
       value: 

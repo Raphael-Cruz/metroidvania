@@ -33,6 +33,20 @@ public bool IsRaining { get; private set; }
         rainRoutine = StartCoroutine(SpawnRain());
     }
 
+    public void StopRain()
+    {
+        if (rainRoutine != null)
+            StopCoroutine(rainRoutine);
+        
+        IsRaining = false;
+
+        // Destroy all existing rain fireballs (since they are children)
+        foreach (Transform child in transform)
+        {
+            Destroy(child.gameObject);
+        }
+    }
+
     public void SetPhase2Parameters(float newSpeed, int newCount, float newRate)
     {
         Debug.Log($"FireballRainSpawner: Phase 2 params set! Speed: {newSpeed}, Count: {newCount}, Rate: {newRate}");
