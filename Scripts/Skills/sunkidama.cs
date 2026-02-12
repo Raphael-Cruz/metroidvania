@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class Sunkidama : MonoBehaviour
 {
+   
+
     [SerializeField] private float speed = 8f;
     [SerializeField] private int damage = 10;
     [SerializeField] private float lifeTime = 5f;
@@ -15,6 +17,11 @@ public class Sunkidama : MonoBehaviour
         moveDirection = (targetPosition - (Vector2)transform.position).normalized;
     }
 
+    public void SetSpeed(float newSpeed)
+    {
+        speed = newSpeed;
+    }
+
     private void Start()
     {
         Destroy(gameObject, lifeTime);
@@ -25,20 +32,23 @@ public class Sunkidama : MonoBehaviour
         transform.position += (Vector3)(moveDirection * speed * Time.deltaTime);
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+private void OnTriggerEnter2D(Collider2D other)
+{
+    
+    
+    if (other.CompareTag("Player"))
     {
-        if (other.CompareTag("Player"))
-        {
-            other.GetComponent<HealthManager>()?.DamagePlayer(damage);
-            Explode();
-            return;
-        }
-
-        if (other.CompareTag("Ground"))
-        {
-            Explode();
-        }
+        other.GetComponent<HealthManager>()?.DamagePlayer(damage);
+        Explode();
+        return;
     }
+
+    if (other.CompareTag("Ground"))
+    {
+        Explode();
+    }
+    
+}
 
     private void Explode()
     {

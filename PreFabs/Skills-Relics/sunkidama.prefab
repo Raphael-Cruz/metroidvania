@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 5089564163207722175}
   - component: {fileID: 3016647983865089490}
   - component: {fileID: 745639037017472824}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: Ember
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4850,13 +4850,14 @@ GameObject:
   m_Component:
   - component: {fileID: 2038726352136055770}
   - component: {fileID: 8688574320160438581}
-  m_Layer: 0
+  - component: {fileID: 4011373587283193405}
+  m_Layer: 17
   m_Name: sunkidama
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2038726352136055770
 Transform:
   m_ObjectHideFlags: 0
@@ -4866,7 +4867,7 @@ Transform:
   m_GameObject: {fileID: 1158416888682166586}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -15.29, y: -7.8899994, z: -0.79158366}
+  m_LocalPosition: {x: -14.42, y: -5.4, z: -0.79158366}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4889,6 +4890,19 @@ MonoBehaviour:
   damage: 10
   lifeTime: 5
   sunExplosion: {fileID: 3836803672025388539, guid: 7e90fbd5c8047b04da0a6b3b596a9b54, type: 3}
+--- !u!114 &4011373587283193405
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1158416888682166586}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c06460bde5656a842880461a88092e19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damageAmount: 10
 --- !u!1 &3441634603824590727
 GameObject:
   m_ObjectHideFlags: 0
@@ -4899,7 +4913,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5036478728320725955}
   - component: {fileID: 2740569140142711373}
-  m_Layer: 0
+  m_Layer: 17
   m_Name: Point Light
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4933,7 +4947,7 @@ Light:
   m_Type: 2
   m_Shape: 0
   m_Color: {r: 1, g: 0.6207441, b: 0.20392156, a: 1}
-  m_Intensity: 0
+  m_Intensity: 42.619953
   m_Range: 8
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -4997,9 +5011,11 @@ GameObject:
   - component: {fileID: 6234823435250885443}
   - component: {fileID: 7969412468140260331}
   - component: {fileID: 7071487638031072630}
-  m_Layer: 0
+  - component: {fileID: 5860173397243797346}
+  - component: {fileID: 280889914846915418}
+  m_Layer: 17
   m_Name: sunkidama
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -5013,7 +5029,7 @@ Transform:
   m_GameObject: {fileID: 4711820572737581479}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.2, y: 2.2, z: 0.79158366}
+  m_LocalPosition: {x: 0.22, y: 0.48, z: 0.79158366}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -10005,9 +10021,9 @@ CircleCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.17005777, y: -0.52840185}
+  m_Offset: {x: 0.09297824, y: -0.027388096}
   serializedVersion: 2
-  m_Radius: 3.2581553
+  m_Radius: 2.0891244
 --- !u!50 &7071487638031072630
 Rigidbody2D:
   serializedVersion: 4
@@ -10035,3 +10051,32 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 0
+--- !u!114 &5860173397243797346
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4711820572737581479}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c06460bde5656a842880461a88092e19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damageAmount: 10
+--- !u!114 &280889914846915418
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4711820572737581479}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b504aadc61bfd2f42a55e825a38dfb2c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 8
+  damage: 10
+  lifeTime: 5
+  sunExplosion: {fileID: 3836803672025388539, guid: 7e90fbd5c8047b04da0a6b3b596a9b54, type: 3}

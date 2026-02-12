@@ -10,28 +10,27 @@ public class Wrath_boss : MonoBehaviour
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private SpriteRenderer spriteRenderer;
     [SerializeField] private EnemyHealthController healthController;
-     [SerializeField] private FireballRainSpawner fireballRainSpawner;
+    [SerializeField] private FireballRainSpawner fireballRainSpawner;
+    
+    [Header("Spawn Points")]
+    [SerializeField] private Transform fireballSpawnPoint;
+    [SerializeField] private Transform sunkidamaSpawnPoint;
     
     [Header("Movement Settings")]
-    [SerializeField] private float moveSpeed = 3f;
-    [SerializeField] private float dashSpeed = 10f;
-    [SerializeField] private float dashDuration = 0.5f;
-    
+    [SerializeField] private float dashSpeed = 20f;
+    [SerializeField] private float screenWidth = 30f; // Adjust to match your game's screen width
+
+
     [Header("Combat Settings")]
-    [SerializeField] private float scytheRange = 2f;
-    [SerializeField] private float meleeAttackRange = 2.5f;
-    [SerializeField] private float spellCastRange = 8f;
-    [SerializeField] private float optimalSpellRange = 5f; // Sweet spot for casting
     
     [Header("Cooldowns")]
-    [SerializeField] private float scytheCooldown = 1.5f;
     [SerializeField] private float dashCooldown = 3f;
     [SerializeField] private float spellCooldown = 5f;
     [SerializeField] private float minTimeBetweenSpells = 3f;
     
     [Header("Decision Making")]
     [SerializeField] private float decisionInterval = 0.5f;
-    [SerializeField] private float aggressionLevel = 0.6f; // 0-1, higher = more aggressive melee
+  
 
     [Header ("Skills")]
      
@@ -55,6 +54,11 @@ public class Wrath_boss : MonoBehaviour
     private bool isDashing = false;
     private bool isAttacking = false;
     private bool isAnySpellActive = false;
+    
+    // Phase 2 system
+    private bool isPhase2 = false;
+    private const float PHASE2_HP_THRESHOLD = 0.6f; // 60% HP
+    private int currentHealth;
  
 
     // Physics
@@ -62,7 +66,7 @@ public class Wrath_boss : MonoBehaviour
     private bool isFacingRight = true; // Assuming default sprite faces right
     
     // Cooldown timers
-    private float scytheTimer = 0f;
+ 
     private float dashTimer = 0f;
     private float spellTimer = 0f;
     private float lastSpellCastTime = 0f;
@@ -83,10 +87,8 @@ public class Wrath_boss : MonoBehaviour
     private enum BossAction
     {
         Idle,
-        Chase,
-        Retreat,
         Dash,
-        ScytheAttack,
+   
         CastFire,
         CastFireProjectile,
         CastSunkidama
@@ -113,13 +115,37 @@ public class Wrath_boss : MonoBehaviour
         }
 
         // Initialize facing direction based on sprite flip if needed, or assume default
-        // If spriteRenderer.flipX is true initially, it means we are facing left
+     
         if (spriteRenderer != null && spriteRenderer.flipX) 
             isFacingRight = false;
+            
+        // Initialize health for Phase 2 tracking
+        if (healthController != null)
+            currentHealth = healthController.totalhealth;
+        else
+            currentHealth = maxHealth;
+            
+        // Make boss immovable by physics (collisions, shots, etc.)
+        if (rb != null)
+        {
+            rb.constraints = RigidbodyConstraints2D.FreezeAll;
+        }
     }
     
     void Update()
     {
+       
+        if (!isPhase2 && healthController != null)
+        {
+            currentHealth = healthController.totalhealth;
+            float hpPercentage = (float)currentHealth / maxHealth;
+            
+            if (hpPercentage <= PHASE2_HP_THRESHOLD)
+            {
+                EnterPhase2();
+            }
+        }
+        
         if (player == null || isCasting || isDashing || isAttacking) 
         {
             // If busy, zero out velocity unless dashing handles it (dashing might use velocity)
@@ -148,7 +174,7 @@ public class Wrath_boss : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (isDashing) return; // Dashing handles its own movement or velocity
+        if (isDashing) return; 
 
         // Apply velocity
         if (rb != null)
@@ -156,64 +182,72 @@ public class Wrath_boss : MonoBehaviour
             rb.velocity = new Vector2(currentVelocity.x, rb.velocity.y);
         }
 
-        // Handle Animation
         if (animator != null)
         {
-            // Use currentVelocity (intent) instead of rb.velocity (physics result) to prevent jitter/early stops
+           
             bool isMoving = Mathf.Abs(currentVelocity.x) > 0.1f;
             animator.SetBool(animID_IsRunning, isMoving);
         }
     }
     
+    void LateUpdate()
+    {
+       
+        if (fireballSpawnPoint != null)
+        {
+            // Keep the spawn point at the same X position as boss, maintain its local Y offset
+            // Local position will naturally flip when parent (boss) flips
+        }
+    }
+    
     void UpdateCooldowns()
     {
-        scytheTimer -= Time.deltaTime;
-        dashTimer -= Time.deltaTime;
-        spellTimer -= Time.deltaTime;
+        // Cooldowns run twice as fast in Phase 2 (half the cooldown time)
+        float cooldownMultiplier = isPhase2 ? 2f : 1f;
+        
+       
+        dashTimer -= Time.deltaTime * cooldownMultiplier;
+        spellTimer -= Time.deltaTime * cooldownMultiplier;
+    }
+    
+    void EnterPhase2()
+    {
+        isPhase2 = true;
+        dashSpeed = 35f; // Increase dash speed for Phase 2
+        
+        // Update FireballRain parameters for Phase 2: Speed 30, Count 45, Rate 0.3
+        if (fireballRainSpawner != null)
+        {
+            fireballRainSpawner.SetPhase2Parameters(22f, 45, 0.3f);
+        }
+        
+        Debug.Log("Boss entered Phase 2!");
     }
     
     void DecideNextAction()
     {
         float distanceToPlayer = Vector2.Distance(transform.position, player.position);
         
-        // Priority 1: Scythe attack if in range and ready
-        if (distanceToPlayer <= scytheRange && scytheTimer <= 0f)
-        {
-            currentAction = BossAction.ScytheAttack;
-            return;
-        }
+    
         
-        // Priority 2: Spell casting decision
-        if (CanCastSpell() && ShouldCastSpell(distanceToPlayer))
+       
+        if (CanCastSpell())
         {
             currentAction = ChooseRandomSpell();
             return;
         }
         
-        // Priority 3: Dash towards player if they're mid-range
-        if (distanceToPlayer > meleeAttackRange && distanceToPlayer < spellCastRange && dashTimer <= 0f)
-        {
-            if (Random.value > 0.5f) // 50% chance to dash
-            {
-                currentAction = BossAction.Dash;
-                return;
-            }
-        }
+    
         
-        // Priority 4: Chase or retreat based on optimal range
-        if (distanceToPlayer > meleeAttackRange)
+        // Check for Dash (if spell is on cooldown or not chosen)
+        if (dashTimer <= 0f)
         {
-            currentAction = BossAction.Chase;
+            currentAction = BossAction.Dash;
+            return;
         }
-        else if (distanceToPlayer < scytheRange * 0.5f)
-        {
-            // Too close, back up slightly
-            currentAction = BossAction.Retreat;
-        }
-        else
-        {
-            currentAction = BossAction.Idle;
-        }
+
+        // Default: Idle (no more Chase/Retreat movement)
+        currentAction = BossAction.Idle;
     }
     
     bool CanCastSpell()
@@ -223,33 +257,14 @@ public class Wrath_boss : MonoBehaviour
                Time.time - lastSpellCastTime >= minTimeBetweenSpells;
     }
     
-    bool ShouldCastSpell(float distance)
-    {
-        // More likely to cast at optimal range
-        if (distance >= meleeAttackRange && distance <= spellCastRange)
-        {
-            // Aggression affects spell vs melee choice
-            float spellChance = 1f - aggressionLevel;
-            
-            // Bonus chance if at optimal range
-            if (distance >= optimalSpellRange - 1f && distance <= optimalSpellRange + 1f)
-            {
-                spellChance += 0.3f;
-            }
-            
-            return Random.value < spellChance;
-        }
-        
-        return false;
-    }
-    
     BossAction ChooseRandomSpell()
     {
         float roll = Random.value;
         
+        // More varied percentages: FireRain 33%, Fireball 33%, Sunkidama 34%
         if (roll < 0.33f)
             return BossAction.CastFire;
-        else if (roll < 0.66f)
+        else if (roll < 0.66f) // 0.33 + 0.33 = 0.66
             return BossAction.CastFireProjectile;
         else
             return BossAction.CastSunkidama;
@@ -258,24 +273,12 @@ public class Wrath_boss : MonoBehaviour
     void ExecuteCurrentAction()
     {
         if (isCasting || isDashing || isAttacking)
-    return;
+            return;
 
         switch (currentAction)
         {
-            case BossAction.Chase:
-                MoveTowardsPlayer();
-                break;
-                
-            case BossAction.Retreat:
-                MoveAwayFromPlayer();
-                break;
-                
             case BossAction.Dash:
                 StartCoroutine(DashTowardsPlayer());
-                break;
-                
-            case BossAction.ScytheAttack:
-                StartCoroutine(PerformScytheAttack());
                 break;
                 
             case BossAction.CastFire:
@@ -302,17 +305,7 @@ public class Wrath_boss : MonoBehaviour
         }
     }
     
-    void MoveTowardsPlayer()
-    {
-        float dir = player.position.x > transform.position.x ? 1f : -1f;
-        currentVelocity = new Vector2(dir * moveSpeed, 0f);
-    }
-    
-    void MoveAwayFromPlayer()
-    {
-        float dir = player.position.x > transform.position.x ? -1f : 1f; // Opposition direction
-        currentVelocity = new Vector2(dir * moveSpeed * 0.5f, 0f);
-    }
+
     
     IEnumerator DashTowardsPlayer()
     {
@@ -325,42 +318,44 @@ public class Wrath_boss : MonoBehaviour
 
         FacePlayer(); // Ensure facing correct way before dash
         
-        Vector2 dashDirection = (player.position - transform.position).normalized;
-        // Lock Y for ground dash if needed, or allow diagonal. Assuming ground boss:
-        dashDirection.y = 0; 
-        dashDirection.Normalize();
+        // Determine dash direction (left or right based on player position)
+        float direction = player.position.x > transform.position.x ? 1f : -1f;
+        Vector2 dashDirection = new Vector2(direction, 0f);
 
         SetAnimationState("Dash");
         
-        float elapsed = 0f;
-        while (elapsed < dashDuration)
+        // Make rigidbody kinematic to prevent collisions from affecting dash
+        bool wasKinematic = rb.isKinematic;
+        if (rb) rb.isKinematic = true;
+        
+        // Store starting position to calculate distance traveled
+        float startX = transform.position.x;
+        
+        // Dash across the full screen width - nothing can stop this movement
+        while (Mathf.Abs(transform.position.x - startX) < screenWidth)
         {
-             if (rb) rb.velocity = dashDirection * dashSpeed;
-            elapsed += Time.deltaTime;
-            yield return new WaitForFixedUpdate(); // Use FixedUpdate for physics sync
+            // Directly move transform since we're kinematic
+            transform.position += (Vector3)(dashDirection * dashSpeed * Time.fixedDeltaTime);
+            yield return new WaitForFixedUpdate();
         }
         
-        if (rb) rb.velocity = Vector2.zero;
+        // Restore rigidbody to original state
+        if (rb) 
+        {
+            rb.isKinematic = wasKinematic;
+            rb.velocity = Vector2.zero;
+        }
+        currentVelocity = Vector2.zero;
+        
+        // Face player after dash
+        FacePlayer();
+        
+        
         isDashing = false;
         currentAction = BossAction.Idle;
     }
     
-    IEnumerator PerformScytheAttack()
-    {
-        isAttacking = true;
-        scytheTimer = scytheCooldown;
-        currentVelocity = Vector2.zero; // Stop moving
-        if (rb) rb.velocity = Vector2.zero;
-        
-        FacePlayer();
-        SetAnimationState("ScytheSwing");
-        
-        // Wait for animation (adjust timing as needed)
-        yield return new WaitForSeconds(0.6f);
-        
-        isAttacking = false;
-        currentAction = BossAction.Idle;
-    }
+
     
 
 IEnumerator CastFireRain()
@@ -376,6 +371,9 @@ IEnumerator CastFireRain()
 
     FacePlayer();
 
+    // Flip sprite for FireRain animation (animation sprite is inverted)
+
+    Flip();
 
     animator.SetBool("IsChannelingFireRain", true);
 
@@ -389,19 +387,18 @@ IEnumerator CastFireRain()
         yield return null;
     }
 
+    // Start the fireball rain AFTER animation completes
     fireballRainSpawner.StartFireballRain();
 
-   
-
-
+    // Keep animation active while raining
     while (fireballRainSpawner.IsRaining)   
     {
         yield return null;
     }
 
-  
+    // Turn off animation AFTER raining is done
     animator.SetBool("IsChannelingFireRain", false);
-
+    
     isCasting = false;
     isAnySpellActive = false;
     currentAction = BossAction.Idle;
@@ -419,9 +416,13 @@ IEnumerator CastFireProjectile()
     if (rb) rb.velocity = Vector2.zero;
 
     FacePlayer();
+    
+    // Flip sprite for Fireball animation (animation sprite is inverted)
+    Flip();
+    
+    animator.SetBool("isChannelingFireBall", true);
 
-    animator.SetBool("IsChannelingFireProjectile", true);
-
+    // Wait until casting animation finishes
     yield return null;
 
     AnimatorStateInfo stateInfo = animator.GetCurrentAnimatorStateInfo(0);
@@ -431,25 +432,55 @@ IEnumerator CastFireProjectile()
         yield return null;
     }
 
-    Vector2 playerLastPosition = player.position;
+    // Phase 2: Cast fireball 3 times, Phase 1: Cast once
+    int fireballCount = isPhase2 ? 3 : 1;
+    
+    for (int i = 0; i < fireballCount; i++)
+    {
+        // Capture player position at the moment of spawning for accurate targeting
+        Vector2 playerTargetPosition = player.position;
 
-    GameObject fireball = Instantiate(
-        fireballPrefab,
-        transform.position + Vector3.up * 2f,
-        Quaternion.identity
-    );
+        // Get spawn position - use spawn point if assigned, otherwise default to boss position
+        Vector3 spawnPosition = fireballSpawnPoint != null 
+            ? fireballSpawnPoint.position 
+            : transform.position + Vector3.up * 2f;
 
-    FireBall fireballScript = fireball.GetComponent<FireBall>();
+        // Spawn fireball AFTER animation completes
+        GameObject fireball = Instantiate(
+            fireballPrefab,
+            spawnPosition,
+            Quaternion.identity
+        );
 
-    if (fireballScript != null)
-        fireballScript.Init(playerLastPosition);
-    else
-        Debug.LogError("FireBall script missing on prefab!");
+        FireBall fireballScript = fireball.GetComponent<FireBall>();
 
-    while (fireball != null)
-        yield return null;
+        if (fireballScript != null)
+        {
+            fireballScript.Init(playerTargetPosition);
+            
+            // Phase 2: Fireball Speed 35
+            if (isPhase2)
+            {
+                fireballScript.SetSpeed(35f);
+            }
+        }
+        else
+            Debug.LogError("FireBall script missing on prefab!");
 
-    animator.SetBool("IsChannelingFireProjectile", false);
+        // Keep animation active until fireball is destroyed
+        while (fireball != null)
+            yield return null;
+            
+        // Small delay between fireballs if casting multiple
+        if (i < fireballCount - 1)
+            yield return new WaitForSeconds(0.1f);
+    }
+
+    // Turn off animation AFTER all fireballs are destroyed
+    animator.SetBool("isChannelingFireBall", false);
+    
+    // Flip back
+    Flip();
 
     isCasting = false;
     isAnySpellActive = false;
@@ -483,30 +514,48 @@ IEnumerator CastSunkidama()
         yield return null;
     }
 
+    // Phase 2: Cast sunkidama 2 times, Phase 1: Cast once
+    int sunkidamaCount = isPhase2 ? 2 : 1;
     
-    Vector2 playerLastPosition = player.position;
-
-    GameObject sun = Instantiate(
-        sunkidama,
-        transform.position + Vector3.up * 2f,
-        Quaternion.identity
-    );
-
-    Sunkidama sunScript = sun.GetComponent<Sunkidama>();
-    sun.SetActive(true);
-    sunScript.Init(playerLastPosition);
-
-    
-    animator.SetBool("IsChannelingSunkidama", true);
-
-    
-    while (sun != null)
+    for (int i = 0; i < sunkidamaCount; i++)
     {
-        yield return null;
+        Vector2 playerLastPosition = player.position;
+
+        // Get spawn position - use spawn point if assigned, otherwise default to boss position
+        Vector3 spawnPosition = sunkidamaSpawnPoint != null 
+            ? sunkidamaSpawnPoint.position 
+            : transform.position + Vector3.up * 2f;
+
+        GameObject sun = Instantiate(
+            sunkidama,
+            spawnPosition,
+            Quaternion.identity
+        );
+
+        Sunkidama sunScript = sun.GetComponent<Sunkidama>();
+        sun.SetActive(true);
+        sunScript.Init(playerLastPosition);
+        
+        // Phase 2: Sunkidama Speed 12
+        if (isPhase2)
+        {
+            sunScript.SetSpeed(12f);
+        }
+
+        // Activate channeling animation to stay active while sun exists
+        animator.SetBool("IsChannelingSunkidama", true);
+
+        // Keep animation active until sunkidama is destroyed
+        while (sun != null)
+        {
+            yield return null;
+        }
+        
+        // Turn off animation after this sunkidama is destroyed
+        animator.SetBool("IsChannelingSunkidama", false);
+ 
     }
 
- 
-    animator.SetBool("IsChannelingSunkidama", false);
 
     isCasting = false;
     isAnySpellActive = false;

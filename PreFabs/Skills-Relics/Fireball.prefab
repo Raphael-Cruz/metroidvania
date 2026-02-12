@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7875850059870049739}
-  - component: {fileID: 3094351256585535727}
+  - component: {fileID: 2142424451720737515}
   m_Layer: 17
   m_Name: Fireball
   m_TagString: Enemy
@@ -26,14 +26,14 @@ Transform:
   m_GameObject: {fileID: 3076427568351444202}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -7.0030985, y: -6.962655, z: -0.5080079}
+  m_LocalPosition: {x: -14.48, y: -11.82, z: -0.5080079}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5413367019691139845}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3094351256585535727
+--- !u!114 &2142424451720737515
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -93,7 +93,7 @@ Light:
   m_Type: 2
   m_Shape: 0
   m_Color: {r: 1, g: 0.32040966, b: 0, a: 1}
-  m_Intensity: 0
+  m_Intensity: 12.949804
   m_Range: 7
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -9487,6 +9487,7 @@ GameObject:
   - component: {fileID: 7070735848156291184}
   - component: {fileID: 2156269830296432625}
   - component: {fileID: 1471589094987451837}
+  - component: {fileID: 1962852593858528791}
   m_Layer: 17
   m_Name: Fireball
   m_TagString: Untagged
@@ -9503,7 +9504,7 @@ Transform:
   m_GameObject: {fileID: 8857460609614291621}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0.3885624, w: 0.9214224}
-  m_LocalPosition: {x: -6.89, y: -2.02, z: 0.5080079}
+  m_LocalPosition: {x: 0.2, y: 0.22, z: 0.5080079}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -14368,3 +14369,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damageAmount: 2
+--- !u!114 &1962852593858528791
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8857460609614291621}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e452fd936f44d3947a6e9155c9cc6685, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  speed: 15
+  damage: 2
+  lifeTime: 5
+  ballExplosion: {fileID: 4096719478226159203, guid: 130c95b39a2cf7e4cbd659491fd4459c, type: 3}

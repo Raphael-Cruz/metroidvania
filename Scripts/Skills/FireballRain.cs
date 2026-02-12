@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class FireballRain : MonoBehaviour
 {
-    [SerializeField] private float speed = 8f;
+    [SerializeField] private float speed = 15f;
     [SerializeField] private int damage = 10;
     [SerializeField] private float lifeTime = 5f;
 
@@ -13,6 +13,11 @@ public class FireballRain : MonoBehaviour
     private void Start()
     {
         Destroy(gameObject, lifeTime);
+    }
+    
+    public void SetSpeed(float newSpeed)
+    {
+        speed = newSpeed;
     }
 
     private void Update()
