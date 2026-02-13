@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 public class EnemyHealthController : MonoBehaviour
 {
+    public static EnemyHealthController instance { get; private set; }
     public int totalhealth = 3;
     public GameObject deathEffect;
     public bool isInvulnerable = false;
@@ -17,6 +18,13 @@ public class EnemyHealthController : MonoBehaviour
     // Callback for when damage is taken
     public System.Action<int> onDamageCallback;
 
+private void Awake()
+    {
+       
+        if (instance == null) {
+            instance = this;
+        }
+    }
     private void Start()
     {
         // Check if this enemy is already marked as permanently dead in our WorldState
