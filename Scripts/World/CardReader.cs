@@ -53,7 +53,7 @@ public class CardReader : MonoBehaviour
     {
         if (isUsed) return;
 
-        if (playerInside && Input.GetKeyDown(interactKey))
+        if (playerInside && InputManager.instance.GetInteractDown())
         {
             TryOpenDoor();
         }

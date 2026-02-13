@@ -28,7 +28,7 @@ public class SavePoint : MonoBehaviour
 
     private void Update()
     {
-        if (playerInRange && Input.GetKeyDown(saveKey) && !isAlreadySaved)
+        if (playerInRange && InputManager.instance.GetInteractDown() && !isAlreadySaved)
         {
             PerformSaveProcess();
         }
