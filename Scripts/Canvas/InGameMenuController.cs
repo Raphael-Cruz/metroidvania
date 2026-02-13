@@ -22,7 +22,7 @@ public class InGameMenuController : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape)) // Toggle menu
+        if (InputManager.instance.GetPauseDown()) // Toggle menu
         {
             ToggleMenu();
         }

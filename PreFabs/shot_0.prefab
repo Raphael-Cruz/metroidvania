@@ -183,8 +183,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8101e3cd742f72c4f99ff0cb22643e28, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bulletSpeed: 15
+  bulletSpeed: 25
   rb2D: {fileID: 4333673031231080169}
   moveDir: {x: 1, y: 0}
   impactEffect: {fileID: 5206746975179855005, guid: 187a4b9ecb3d7c448a5eced6c42333f3, type: 3}
   damageAmount: 1
+  impactSound: {fileID: 8300000, guid: fdecbabe47fbae4498c98c45c4f752df, type: 3}

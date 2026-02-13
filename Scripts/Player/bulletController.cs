@@ -8,6 +8,8 @@ public class bulletController : MonoBehaviour
     public GameObject impactEffect;
     public int damageAmount = 5;
 
+    public AudioClip impactSound;
+
     private void Awake()
     {
         if (rb2D == null)
@@ -33,6 +35,11 @@ public class bulletController : MonoBehaviour
 
         if (impactEffect != null)
             Instantiate(impactEffect, transform.position, Quaternion.identity);
+
+        if (impactSound != null)
+        {
+            AudioSource.PlayClipAtPoint(impactSound, transform.position);
+        }
 
         Destroy(gameObject);
     } 

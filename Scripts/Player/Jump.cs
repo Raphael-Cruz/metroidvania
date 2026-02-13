@@ -4,45 +4,28 @@ using UnityEngine;
 public class Jump : MonoBehaviour
 {
     [Header("Jump Settings")]
-    [Tooltip("Initial upward force applied when jumping")]
     public float jumpForce = 14f;
-    
-    [Tooltip("Base gravity multiplier (default Unity gravity is -9.81)")]
     public float gravityScale = 4f;
-    
-    [Tooltip("Extra gravity multiplier when falling (makes falls snappier)")]
     public float fallGravityMultiplier = 2.5f;
-    
-    [Tooltip("Extra gravity when releasing jump button early (enables variable jump height)")]
     public float lowJumpMultiplier = 2f;
-    
-    [Tooltip("Maximum downward velocity to prevent infinite acceleration")]
     public float maxFallSpeed = 20f;
 
     [Header("Assist Settings")]
-    [Tooltip("Multiplier for double jump height")]
     public float doubleJumpMultiplier = 0.8f;
-
-    [Tooltip("Time window after leaving ground where jump still works")]
     public float coyoteTime = 0.12f;
-    
-    [Tooltip("Time window to buffer jump input before landing")]
     public float jumpBufferTime = 0.12f;
-
-    [Header("Input Settings")]
-    [Tooltip("Key to press for jumping")]
-    public KeyCode jumpKey = KeyCode.Space;
 
     [Header("Ground Check")]
     public Transform groundCheck;
     public float groundCheckRadius = 0.2f;
     public LayerMask groundLayer;
+    public LayerMask playerPlatformLayer;
 
     private PlayerAbilityTracker abilities;
-    private bool canDoubleJump;
+    private Rigidbody2D rb;
 
-    private Rigidbody2D theRB;
     private bool isGrounded;
+    private bool canDoubleJump;
 
     // Timers
     private float coyoteCounter;
@@ -54,130 +37,117 @@ public class Jump : MonoBehaviour
 
     void Awake()
     {
-        theRB = GetComponent<Rigidbody2D>();
-        abilities = GetComponent<PlayerAbilityTracker>(); // Get abilities
-        theRB.gravityScale = gravityScale;
-        
-        // Validate groundCheck reference
+        rb = GetComponent<Rigidbody2D>();
+        abilities = GetComponent<PlayerAbilityTracker>();
+
+        rb.gravityScale = gravityScale;
+
         if (groundCheck == null)
         {
-            Debug.LogError($"[Jump] groundCheck is not assigned on {gameObject.name}! Ground detection will not work.", this);
+            Debug.LogError($"[Jump] GroundCheck not assigned on {gameObject.name}", this);
         }
     }
 
     void Update()
     {
-        // Capture input in Update (runs every frame for responsive input)
-        // Store flags that will be read in FixedUpdate
-        if (Input.GetKeyDown(jumpKey))
+        if (InputManager.instance == null)
+            return;
+
+        if (InputManager.instance.GetJumpDown())
             jumpPressedThisFrame = true;
-        
-        jumpHeldThisFrame = Input.GetKey(jumpKey);
+
+        jumpHeldThisFrame = InputManager.instance.GetJump();
     }
 
     void FixedUpdate()
     {
-        // GROUND CHECK
         CheckGround();
 
-        // COYOTE TIME - allows jumping shortly after leaving ground
+        // --- COYOTE TIME ---
         if (isGrounded)
         {
             coyoteCounter = coyoteTime;
-            canDoubleJump = true; // Reset double jump when grounded
+            canDoubleJump = true;
         }
         else
+        {
             coyoteCounter -= Time.fixedDeltaTime;
+        }
 
-        // JUMP BUFFER - allows jump input slightly before landing
+        // --- JUMP BUFFER ---
         if (jumpPressedThisFrame)
         {
             jumpBufferCounter = jumpBufferTime;
-            jumpPressedThisFrame = false; // Clear flag after reading
+            jumpPressedThisFrame = false;
         }
         else
         {
             jumpBufferCounter -= Time.fixedDeltaTime;
         }
 
-        // EXECUTE JUMP - using AddForce for smoother physics interaction
+        // --- JUMP EXECUTION ---
         if (jumpBufferCounter > 0)
         {
-            // Normal Jump
+            // Normal jump
             if (coyoteCounter > 0)
             {
                 PerformJump();
-                jumpBufferCounter = 0; // Clear buffer
-                coyoteCounter = 0;     // Clear coyote time
+                jumpBufferCounter = 0;
+                coyoteCounter = 0;
             }
-            // Double Jump
+            // Double jump
             else if (canDoubleJump && abilities != null && abilities.canDoubleJump)
             {
                 PerformJump(doubleJumpMultiplier);
-                canDoubleJump = false; // Consume double jump
-                jumpBufferCounter = 0; // Clear buffer
-                
-                // Optional: You might want a specific animation trigger here
-                 var anim = GetComponentInChildren<Animator>();
-                 if(anim) anim.SetTrigger("doubleJump");
+                canDoubleJump = false;
+                jumpBufferCounter = 0;
+
+                var anim = GetComponentInChildren<Animator>();
+                if (anim) anim.SetTrigger("doubleJump");
             }
         }
 
-        // Apply enhanced jump physics
         ApplyBetterJumpPhysics();
-        
-        // Clamp fall speed to prevent infinite acceleration
         ClampFallSpeed();
     }
 
     public void PerformJump(float multiplier = 1f)
     {
-        // Cancel any existing vertical velocity before applying jump force
-        // This ensures consistent jump height regardless of current velocity
-        theRB.velocity = new Vector2(theRB.velocity.x, 0f);
-        
-        // Apply jump force using AddForce for more natural physics
-        // Using Impulse mode for instant velocity change (similar to setting velocity but additive)
-        theRB.AddForce(Vector2.up * jumpForce * multiplier, ForceMode2D.Impulse);
-    }
+        // Reset vertical velocity for consistent jump height
+        rb.velocity = new Vector2(rb.velocity.x, 0f);
 
-    public void ResetDoubleJump()
-    {
-        canDoubleJump = true;
+        rb.AddForce(Vector2.up * jumpForce * multiplier, ForceMode2D.Impulse);
     }
 
     void ApplyBetterJumpPhysics()
     {
-        // Safety Check
-        if (float.IsNaN(theRB.velocity.y)) return;
+        if (float.IsNaN(rb.velocity.y))
+            return;
 
-        // FALLING - apply extra gravity for snappier, more responsive falls
-        if (theRB.velocity.y < 0)
+        // Falling
+        if (rb.velocity.y < 0)
         {
-            theRB.velocity += Vector2.up * Physics2D.gravity.y *
-                              (fallGravityMultiplier - 1.3f) * Time.fixedDeltaTime;
+            rb.velocity += Vector2.up * Physics2D.gravity.y *
+                           (fallGravityMultiplier - 1f) * Time.fixedDeltaTime;
         }
-        // RISING + RELEASED JUMP - enables variable jump height
-        // Releasing jump button early cuts the jump short
-        else if (theRB.velocity.y > 0 && !jumpHeldThisFrame)
+        // Rising + released jump (variable height)
+        else if (rb.velocity.y > 0 && !jumpHeldThisFrame)
         {
-            theRB.velocity += Vector2.up * Physics2D.gravity.y *
-                              (lowJumpMultiplier - 1f) * Time.fixedDeltaTime;
+            rb.velocity += Vector2.up * Physics2D.gravity.y *
+                           (lowJumpMultiplier - 1f) * Time.fixedDeltaTime;
         }
     }
 
     void ClampFallSpeed()
     {
-        // Prevent falling too fast (avoids collision detection issues and feels better)
-        if (theRB.velocity.y < -maxFallSpeed)
+        if (rb.velocity.y < -maxFallSpeed)
         {
-            theRB.velocity = new Vector2(theRB.velocity.x, -maxFallSpeed);
+            rb.velocity = new Vector2(rb.velocity.x, -maxFallSpeed);
         }
     }
 
     void CheckGround()
     {
-        // Safety check to prevent null reference errors
         if (groundCheck == null)
         {
             isGrounded = false;
@@ -187,16 +157,17 @@ public class Jump : MonoBehaviour
         isGrounded = Physics2D.OverlapCircle(
             groundCheck.position,
             groundCheckRadius,
-            groundLayer
+            groundLayer | playerPlatformLayer
         );
     }
-
-
-
+public void ResetDoubleJump()
+{
+    canDoubleJump = true;
+}
     void OnDrawGizmosSelected()
     {
         if (groundCheck == null) return;
-        
+
         Gizmos.color = Color.green;
         Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
     }

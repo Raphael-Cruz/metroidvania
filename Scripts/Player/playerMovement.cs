@@ -11,6 +11,7 @@ public class PlayerMovement : MonoBehaviour
     public Rigidbody2D theRB;
     public Animator anim;
     private PlayerAbilityTracker abilities;
+        private InputManager input;
 
     [Header("Movement")]
     public float speed = 4.0f;
@@ -20,10 +21,16 @@ public class PlayerMovement : MonoBehaviour
     public GameObject laserBeam;
     public Transform laserPoint;
 
+    [Header("Audio")]
+    public AudioClip shotSound;
+    private AudioSource audioSource;
+ 
+
     [Header("Jump")]
     public float jumpForce = 20f;
     public Transform groundPoint;
     public LayerMask whatIsGround;
+    public LayerMask PlayerPlatform;
     private bool isOnGround;
     public bool IsOnGround => isOnGround;
 
@@ -101,12 +108,22 @@ public static PlayerMovement instance;
         if (theRB == null)
             theRB = GetComponent<Rigidbody2D>();
 
+        audioSource = GetComponent<AudioSource>();
+
         if (anim == null)
             anim = visual.GetComponent<Animator>();
 
         abilities = GetComponent<PlayerAbilityTracker>();
 
 if (hud == null) hud = FindFirstObjectByType<SkillHUDManager>();
+
+ // Get or create InputManager
+        input = InputManager.instance;
+        if (input == null)
+        {
+            GameObject inputObj = new GameObject("InputManager");
+            input = inputObj.AddComponent<InputManager>();
+        }
 
 if (abilities != null)
     {
@@ -139,7 +156,7 @@ if (abilities != null)
 private void HandleGrounding()
 {
     // Check if the circle actually overlaps ground
-    bool touchingGround = Physics2D.OverlapCircle(groundPoint.position, 0.2f, whatIsGround);
+    bool touchingGround = Physics2D.OverlapCircle(groundPoint.position, 0.2f, whatIsGround | PlayerPlatform);
     
     // We only want to be "grounded" if we are NOT moving upwards. 
     // BUT, we add a tiny buffer (-0.1) so small micro-fluctuations don't break it.
@@ -258,6 +275,7 @@ private void Update()
         {
             facingDirection = moveInput > 0 ? 1 : -1;
             visual.localScale = new Vector3(facingDirection, 1, 1);
+
            
         }
 
@@ -270,6 +288,11 @@ private void Update()
             bulletController newBullet = Instantiate(shotToFire, shotPoint.position, shotPoint.rotation);
             newBullet.moveDir = new Vector2(facingDirection, 0);
             anim.SetTrigger("shotFired");
+
+            if (shotSound != null && audioSource != null)
+            {
+                audioSource.PlayOneShot(shotSound);
+            }
         }
 
 //----------------------
@@ -277,7 +300,7 @@ private void Update()
 //----------------------
 
 
-    if (Input.GetButtonDown("Fire2") && isOnGround && abilities != null )
+    if (InputManager.instance.GetSkillDown() && isOnGround && abilities != null )
     {
     
 if (abilities.canMissile || abilities.canShield)

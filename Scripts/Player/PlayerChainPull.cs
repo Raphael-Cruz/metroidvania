@@ -42,7 +42,7 @@ public class PlayerChainPull : MonoBehaviour
         movement = GetComponent<PlayerMovement>();
         jumpScript = GetComponent<Jump>();
     }
-// ... (Start method remains same) ...
+
     void Update()
     {
         if (!abilities.canHook)
@@ -55,14 +55,14 @@ public class PlayerChainPull : MonoBehaviour
         else // Only check for input if cooldown is done (or if we are pulling)
         {
             // NEW: Hook Jump / Jump Cancel
-            if (pulling && Input.GetKeyDown(jumpScript.jumpKey)) // Use key from Jump script for consistency
+            if (pulling && InputManager.instance.GetJumpDown()) // Use key from Jump script for consistency
             {
                 StopPull();
                 if(jumpScript) jumpScript.PerformJump();
                 return;
             }
 
-            if (Input.GetKeyDown(hookKey))
+            if (InputManager.instance.GetHookDown())
             {
                 if (!pulling && currentHook != null)
                 {
@@ -90,7 +90,7 @@ public class PlayerChainPull : MonoBehaviour
         if (diff.sqrMagnitude < 0.1f) 
         {
             StopPull();
-            rb.velocity = Vector2.zero; // Optional: Stop completely to avoid jitter
+            rb.velocity = Vector2.zero; 
             return;
         }
 

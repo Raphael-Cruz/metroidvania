@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &9128583550519327480
+--- !u!1 &7625807723131893561
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,12 +8,12 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 4840863656461118572}
-  - component: {fileID: 9127715468596782988}
-  - component: {fileID: 1625500631770278727}
-  - component: {fileID: 4981608143647884761}
-  - component: {fileID: 7295015717732325590}
-  - component: {fileID: 5657659013717707986}
+  - component: {fileID: 8586562391102390644}
+  - component: {fileID: 36361052092701753}
+  - component: {fileID: 1332891304103029262}
+  - component: {fileID: 5241350348638559653}
+  - component: {fileID: 2333470230721002519}
+  - component: {fileID: 7218574447663721379}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -21,13 +21,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4840863656461118572
+--- !u!4 &8586562391102390644
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9128583550519327480}
+  m_GameObject: {fileID: 7625807723131893561}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 847.5678, y: 345.01715, z: -15.935967}
@@ -36,13 +36,13 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &9127715468596782988
+--- !u!114 &36361052092701753
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9128583550519327480}
+  m_GameObject: {fileID: 7625807723131893561}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7a220f087c11fe447a5d085a8e7feae7, type: 3}
@@ -51,13 +51,13 @@ MonoBehaviour:
   maxPotions: 3
   currentPotion: 0
   anim: {fileID: 0}
---- !u!114 &1625500631770278727
+--- !u!114 &1332891304103029262
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9128583550519327480}
+  m_GameObject: {fileID: 7625807723131893561}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a3d231fad7be9c947b5e575e822719df, type: 3}
@@ -70,42 +70,55 @@ MonoBehaviour:
   invincibleTime: 2
   currentUIFlash: {fileID: 0}
   isInvulnerable: 0
---- !u!114 &4981608143647884761
+--- !u!114 &5241350348638559653
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9128583550519327480}
+  m_GameObject: {fileID: 7625807723131893561}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9caee15d68284d04fb5dc59fb998d233, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &7295015717732325590
+--- !u!114 &2333470230721002519
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9128583550519327480}
+  m_GameObject: {fileID: 7625807723131893561}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6eee9733b16164043ae49e8153124dd6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &5657659013717707986
+--- !u!114 &7218574447663721379
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9128583550519327480}
+  m_GameObject: {fileID: 7625807723131893561}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cd614c81f660b4a4f85b48be7caec83c, type: 3}
+  m_Script: {fileID: 11500000, guid: 5d1f5f9826e326440a321e320d49834f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shieldDuration: 4
-  castAnimationTime: 0.5
-  shieldObject: {fileID: 0}
+  moveLeftKey: 97
+  moveRightKey: 100
+  jumpKey: 32
+  jumpButton: Jump
+  shootKey: 122
+  shootButton: Fire1
+  skillKey: 120
+  skillButton: Fire2
+  hookKey: 99
+  hookButton: Hook
+  potionKey: 113
+  potionButton: Potion
+  interactKey: 101
+  interactButton: Interact
+  pauseKey: 27
+  pauseButton: Pause

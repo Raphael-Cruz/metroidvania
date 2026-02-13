@@ -34,7 +34,7 @@ void Start()
     void Update()
     {
     
-        if (Input.GetKeyDown(KeyCode.E))
+        if (InputManager.instance.GetPotionDown())
         {
             TryUsePotion();
         }

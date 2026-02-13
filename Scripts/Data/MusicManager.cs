@@ -17,6 +17,8 @@ public class MusicManager : MonoBehaviour
         public AudioClip track;
     }
 
+private Coroutine fadeCoroutine;
+
     public List<SceneTrack> playlist;
 
     void Awake() {
@@ -48,29 +50,42 @@ public class MusicManager : MonoBehaviour
         }
     }
 
-    void PlayTrack(AudioClip newTrack) {
-        if (audioSource.clip == newTrack) return; // Don't restart if already playing
+public void PlayTrack(AudioClip newTrack)
+{
+    if (audioSource.clip == newTrack)
+        return;
 
-        audioSource.clip = newTrack;
-        audioSource.Play();
-    }
+    if (fadeCoroutine != null)
+        StopCoroutine(fadeCoroutine);
 
-    private IEnumerator Crossfade(AudioClip newTrack) {
+    fadeCoroutine = StartCoroutine(Crossfade(newTrack));
+}
+
+private IEnumerator Crossfade(AudioClip newTrack)
+{
     float startVolume = audioSource.volume;
 
-    // Fade Out
-    while (audioSource.volume > 0) {
+    // Fade OUT
+    while (audioSource.volume > 0f)
+    {
         audioSource.volume -= Time.deltaTime * fadeSpeed;
         yield return null;
     }
 
+    audioSource.volume = 0f;
+
     audioSource.clip = newTrack;
     audioSource.Play();
 
-    // Fade In
-    while (audioSource.volume < startVolume) {
+    // Fade IN
+    while (audioSource.volume < startVolume)
+    {
         audioSource.volume += Time.deltaTime * fadeSpeed;
         yield return null;
     }
+
+    audioSource.volume = startVolume;
 }
+
+
 }
