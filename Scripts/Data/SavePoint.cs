@@ -68,6 +68,12 @@ public class SavePoint : MonoBehaviour
             SaveManager.instance.SaveGame(SceneManager.GetActiveScene().name, transform.position);
         }
 
+        // 7. Reset Potions
+        if (PotionManager.instance != null)
+        {
+            PotionManager.instance.currentPotion = PotionManager.instance.maxPotions;
+        }
+
         Debug.Log("Progress Saved: Health Refilled, Enemies Reset, UI Triggered.");
     }
 }

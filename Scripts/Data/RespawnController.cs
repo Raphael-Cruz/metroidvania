@@ -153,6 +153,10 @@ private IEnumerator RespawnCo()
         if (rb != null) rb.simulated = true;
 
         HealthManager.instance?.FillHealth();
+        if(PotionManager.instance != null){
+ PotionManager.instance.currentPotion = PotionManager.instance.maxPotions;
+        }
+           
         isHandlingRespawn = false; 
     }
 }

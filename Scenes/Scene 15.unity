@@ -280,11 +280,11 @@ PrefabInstance:
     - target: {fileID: 5657659013717707986, guid: 1892843aeb857e640b8ddf35c9f9719b, type: 3}
       propertyPath: shieldObject
       value: 
-      objectReference: {fileID: 1441010325}
+      objectReference: {fileID: 0}
     - target: {fileID: 9127715468596782988, guid: 1892843aeb857e640b8ddf35c9f9719b, type: 3}
       propertyPath: anim
       value: 
-      objectReference: {fileID: 1273419689}
+      objectReference: {fileID: 0}
     - target: {fileID: 9128583550519327480, guid: 1892843aeb857e640b8ddf35c9f9719b, type: 3}
       propertyPath: m_Name
       value: GameManager
@@ -424,6 +424,14 @@ PrefabInstance:
     - target: {fileID: 2427392998171284835, guid: 2f2792d599287264bac54d1b61d5cd64, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2842148251853494504, guid: 2f2792d599287264bac54d1b61d5cd64, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -41.28
+      objectReference: {fileID: 0}
+    - target: {fileID: 2842148251853494504, guid: 2f2792d599287264bac54d1b61d5cd64, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -17.35
       objectReference: {fileID: 0}
     - target: {fileID: 3007745007306370859, guid: 2f2792d599287264bac54d1b61d5cd64, type: 3}
       propertyPath: m_Size.y
@@ -21139,11 +21147,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 1
   m_Constraints: 0
---- !u!95 &1273419689 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 6186368583418894804, guid: 2f2792d599287264bac54d1b61d5cd64, type: 3}
-  m_PrefabInstance: {fileID: 359790437}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1357097902
 GameObject:
   m_ObjectHideFlags: 0
@@ -21233,11 +21236,6 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
---- !u!1 &1441010325 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 9089639425996981105, guid: 2f2792d599287264bac54d1b61d5cd64, type: 3}
-  m_PrefabInstance: {fileID: 359790437}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1451698828
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -22170,11 +22168,6 @@ Tilemap:
 SpriteRenderer:
   m_CorrespondingSourceObject: {fileID: 4861608556543295164, guid: 82c1999d0b6713a41a97c854642a47db, type: 3}
   m_PrefabInstance: {fileID: 6805404839438929809}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &1945485588 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 2427392998171284835, guid: 2f2792d599287264bac54d1b61d5cd64, type: 3}
-  m_PrefabInstance: {fileID: 359790437}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1948078148
 GameObject:
@@ -24721,7 +24714,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f23b1a67f112314f9f0317ad19ae53d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 1945485588}
+  player: {fileID: 0}
   lookAheadX: 3
   lookAheadSmoothTime: 0.15
   lookAheadUp: 1.5
@@ -30654,7 +30647,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4335801971761873372, guid: 82c1999d0b6713a41a97c854642a47db, type: 3}
       propertyPath: totalhealth
-      value: 10
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 7412198821162546455, guid: 82c1999d0b6713a41a97c854642a47db, type: 3}
       propertyPath: m_Name
@@ -30667,7 +30660,7 @@ PrefabInstance:
     - target: {fileID: 9010449816296011952, guid: 82c1999d0b6713a41a97c854642a47db, type: 3}
       propertyPath: player
       value: 
-      objectReference: {fileID: 1945485588}
+      objectReference: {fileID: 0}
     - target: {fileID: 9010449816296011952, guid: 82c1999d0b6713a41a97c854642a47db, type: 3}
       propertyPath: afterImage
       value: 

@@ -28,7 +28,7 @@ private void Awake()
     private void Start()
     {
         // Check if this enemy is already marked as permanently dead in our WorldState
-        if (!string.IsNullOrEmpty(enemyID) && WorldState.PermanentDeadEnemies.Contains(enemyID))
+        if (!string.IsNullOrEmpty(enemyID) && WorldState.PermanentDeadEnemies.Contains(enemyID) || EnemyStatusManager.instance.defeatedEnemies.Contains(enemyID))
         {
             Destroy(gameObject);
             return;
@@ -77,7 +77,10 @@ private void Awake()
             // save the game the INSTANT a boss dies:
             SaveManager.instance.SaveGame(SceneManager.GetActiveScene().name, transform.position);
         }
-
+        if(EnemyStatusManager.instance != null)
+        {
+            EnemyStatusManager.instance.MarkAsDefeated(enemyID);
+        }
         if (deathEffect != null)
         {
             Instantiate(deathEffect, transform.position, transform.rotation);

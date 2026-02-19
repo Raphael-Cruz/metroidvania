@@ -546,21 +546,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2f2792d599287264bac54d1b61d5cd64, type: 3}
---- !u!95 &291367195 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 6186368583418894804, guid: 2f2792d599287264bac54d1b61d5cd64, type: 3}
-  m_PrefabInstance: {fileID: 291367194}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &291367196 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 9089639425996981105, guid: 2f2792d599287264bac54d1b61d5cd64, type: 3}
-  m_PrefabInstance: {fileID: 291367194}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &291367197 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 2427392998171284835, guid: 2f2792d599287264bac54d1b61d5cd64, type: 3}
-  m_PrefabInstance: {fileID: 291367194}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &304377090
 GameObject:
   m_ObjectHideFlags: 0
@@ -798,7 +783,7 @@ MonoBehaviour:
   totalhealth: 5
   deathEffect: {fileID: 778075517028518186, guid: 380f061b9002e9a4e912c994e50dae6c, type: 3}
   isInvulnerable: 0
-  enemyID: 
+  enemyID: Walker03
   isPermanentEnemy: 0
 --- !u!4 &357003207
 Transform:
@@ -973,6 +958,14 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1542882277709957088, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1542882277709957088, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1760410559731312975, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -1067,6 +1060,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2027592777524448091, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2290877012582849191, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2290877012582849191, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
+      propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2444939885449816262, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
@@ -1191,6 +1192,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3810802335196042870, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4225173823400566732, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4225173823400566732, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
+      propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4348817305599316316, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
@@ -1735,6 +1744,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7288045581010912457, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7317032641269553312, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7317032641269553312, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
+      propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7899786098607817932, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
@@ -5725,11 +5742,11 @@ PrefabInstance:
     - target: {fileID: 5657659013717707986, guid: 1892843aeb857e640b8ddf35c9f9719b, type: 3}
       propertyPath: shieldObject
       value: 
-      objectReference: {fileID: 291367196}
+      objectReference: {fileID: 0}
     - target: {fileID: 9127715468596782988, guid: 1892843aeb857e640b8ddf35c9f9719b, type: 3}
       propertyPath: anim
       value: 
-      objectReference: {fileID: 291367195}
+      objectReference: {fileID: 0}
     - target: {fileID: 9128583550519327480, guid: 1892843aeb857e640b8ddf35c9f9719b, type: 3}
       propertyPath: m_Name
       value: GameManager
@@ -5871,7 +5888,7 @@ MonoBehaviour:
   totalhealth: 5
   deathEffect: {fileID: 778075517028518186, guid: 380f061b9002e9a4e912c994e50dae6c, type: 3}
   isInvulnerable: 0
-  enemyID: 
+  enemyID: Walker02
   isPermanentEnemy: 0
 --- !u!4 &869258293
 Transform:
@@ -48662,7 +48679,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f23b1a67f112314f9f0317ad19ae53d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 291367197}
+  player: {fileID: 0}
   lookAheadX: 3
   lookAheadSmoothTime: 0.15
   lookAheadUp: 1.5
@@ -48732,6 +48749,10 @@ PrefabInstance:
     - target: {fileID: 2552809138418742347, guid: 08306c6de37e543419dc16504d3d5bc6, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2611011309541217436, guid: 08306c6de37e543419dc16504d3d5bc6, type: 3}
+      propertyPath: enemyID
+      value: Walker01
       objectReference: {fileID: 0}
     - target: {fileID: 4798165095892514414, guid: 08306c6de37e543419dc16504d3d5bc6, type: 3}
       propertyPath: m_Name
