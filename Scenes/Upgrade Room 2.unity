@@ -2983,6 +2983,37 @@ Transform:
   - {fileID: 327748524}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &540536761
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 540536762}
+  m_Layer: 0
+  m_Name: exitPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &540536762
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 540536761}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -3.1, y: 0.23, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6707199709577731471}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &574788961
 GameObject:
   m_ObjectHideFlags: 0
@@ -16337,7 +16368,7 @@ Tilemap:
     second:
       serializedVersion: 2
       m_TileIndex: 103
-      m_TileSpriteIndex: 99
+      m_TileSpriteIndex: 114
       m_TileMatrixIndex: 0
       m_TileColorIndex: 32
       m_TileObjectToInstantiateIndex: 65535
@@ -17307,7 +17338,7 @@ Tilemap:
     second:
       serializedVersion: 2
       m_TileIndex: 67
-      m_TileSpriteIndex: 110
+      m_TileSpriteIndex: 111
       m_TileMatrixIndex: 0
       m_TileColorIndex: 32
       m_TileObjectToInstantiateIndex: 65535
@@ -18522,8 +18553,8 @@ Tilemap:
     m_Data: {fileID: -859182011, guid: 76cfb9294541e8b42bb56cfe95d12674, type: 3}
   - m_RefCount: 19
     m_Data: {fileID: 472967697, guid: 76cfb9294541e8b42bb56cfe95d12674, type: 3}
-  - m_RefCount: 1
-    m_Data: {fileID: -1630666070, guid: 76cfb9294541e8b42bb56cfe95d12674, type: 3}
+  - m_RefCount: 0
+    m_Data: {fileID: 0}
   - m_RefCount: 7
     m_Data: {fileID: 949524430, guid: 76cfb9294541e8b42bb56cfe95d12674, type: 3}
   - m_RefCount: 7
@@ -18544,16 +18575,16 @@ Tilemap:
     m_Data: {fileID: 1967375075, guid: 76cfb9294541e8b42bb56cfe95d12674, type: 3}
   - m_RefCount: 6
     m_Data: {fileID: -1182920859, guid: 76cfb9294541e8b42bb56cfe95d12674, type: 3}
-  - m_RefCount: 1
-    m_Data: {fileID: -487350483, guid: 76cfb9294541e8b42bb56cfe95d12674, type: 3}
   - m_RefCount: 0
     m_Data: {fileID: 0}
+  - m_RefCount: 1
+    m_Data: {fileID: -487350483, guid: 76cfb9294541e8b42bb56cfe95d12674, type: 3}
   - m_RefCount: 7
     m_Data: {fileID: 540037374, guid: 76cfb9294541e8b42bb56cfe95d12674, type: 3}
   - m_RefCount: 1
     m_Data: {fileID: -501500327, guid: 76cfb9294541e8b42bb56cfe95d12674, type: 3}
-  - m_RefCount: 0
-    m_Data: {fileID: 0}
+  - m_RefCount: 1
+    m_Data: {fileID: -1630666070, guid: 76cfb9294541e8b42bb56cfe95d12674, type: 3}
   - m_RefCount: 1
     m_Data: {fileID: 928725180, guid: 76cfb9294541e8b42bb56cfe95d12674, type: 3}
   - m_RefCount: 2
@@ -22514,8 +22545,8 @@ MonoBehaviour:
   sceneToLoad: Boss Room
   targetDoorID: 2
   thisDoorID: 1
-  exitDirection: 0
-  distancePath: 3
+  exitPoint: {fileID: 540536762}
+  playerFacing: 0
 --- !u!114 &442054762646334841
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -23374,6 +23405,14 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1542882277709957088, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1542882277709957088, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1817459145134634374, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -23468,6 +23507,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2278544461410165747, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2290877012582849191, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2290877012582849191, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
+      propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2544972148872268133, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
@@ -23716,6 +23763,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4039062690419266388, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4225173823400566732, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4225173823400566732, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
+      propertyPath: m_AnchorMax.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4265807693882819345, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
@@ -24302,6 +24357,14 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7317032641269553312, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7317032641269553312, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7883749507646678617, guid: d17a08b579646dc47a8e4e024542fa0f, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -24811,6 +24874,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3184487334405190207}
+  - {fileID: 540536762}
   m_Father: {fileID: 6109878790104890613}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!120 &6992586301863476032

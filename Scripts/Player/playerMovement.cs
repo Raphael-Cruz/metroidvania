@@ -90,6 +90,7 @@ private const float tapThreshold = 0.15f;
     public bool canMissile;
 
     public bool canMove;
+    bool lastFrameDown;
 
 [Header("Edge Detection")]
 public Transform wallCheck;
@@ -101,15 +102,33 @@ public Vector2 hangingOffset;
 private bool isOnEdge;
 private bool isHanging;
 
-private bool wasSimulatedBeforeTransition;
-private bool wasAnimatorEnabledBeforeTransition;
+private bool wasSimulatedBeforeTransition = true;
+private bool wasAnimatorEnabledBeforeTransition = true;
+private bool savedTransitionState = false;
 
+[HideInInspector] public bool isRespawning = false;
 public static PlayerMovement instance;
 
- private void Awake()
+private void Awake()
+{
+    instance = this;
+    
+    // Se estamos respawnando, congela imediatamente antes do primeiro Update
+    if (RespawnController.respawningFromDeath)
     {
-        instance = this;
+        isRespawning = true;
+        theRB = GetComponent<Rigidbody2D>();
+        if (theRB != null)
+        {
+            theRB.simulated = false;
+            theRB.velocity = Vector2.zero;
+            theRB.constraints = RigidbodyConstraints2D.FreezeAll;
+        }
+        if (anim == null && visual != null)
+            anim = visual.GetComponent<Animator>();
+        if (anim != null) anim.enabled = false;
     }
+}
     
 
     private void Start()
@@ -213,31 +232,26 @@ private void Update()
 {
 
 
-  if (BossBattleState.IsInTransition)
+if (BossBattleState.IsInTransition)
+{
+    if (!savedTransitionState)
     {
-        Debug.Log("Freezing Battle State");
-        // Cache states once
-        if (!wasSimulatedBeforeTransition)
-        {
-            wasSimulatedBeforeTransition = theRB.simulated;
-            wasAnimatorEnabledBeforeTransition = anim.enabled;
-        }
-
-        theRB.velocity = Vector2.zero;
-        theRB.simulated = false;   // freeze physics
-        anim.enabled = false;      // freeze animation
-        return;
+        wasSimulatedBeforeTransition = theRB.simulated;
+        wasAnimatorEnabledBeforeTransition = anim.enabled;
+        savedTransitionState = true;
     }
-    else if (!theRB.simulated)
-    {
-        Debug.Log("Restoring player state");
-        // Restore safely
-        theRB.simulated = wasSimulatedBeforeTransition;
-        anim.enabled = wasAnimatorEnabledBeforeTransition;
 
-        wasSimulatedBeforeTransition = false;
-        wasAnimatorEnabledBeforeTransition = false;
-    }
+    theRB.velocity = Vector2.zero;
+    theRB.simulated = false;
+    anim.enabled = false;
+    return;
+}
+else if (savedTransitionState && !isRespawning)
+{
+    theRB.simulated = wasSimulatedBeforeTransition;
+    anim.enabled = wasAnimatorEnabledBeforeTransition;
+    savedTransitionState = false;
+}
 
 
         if (!InGameMenuController.isGamePaused) 
@@ -279,7 +293,7 @@ private void Update()
         // MOVEMENT
         // -----------------------
         float moveInput = (canMove && !isCrouching) ? Input.GetAxisRaw("Horizontal") : 0f;
-theRB.velocity = new Vector2(moveInput * speed, theRB.velocity.y);
+        theRB.velocity = new Vector2(moveInput * speed, theRB.velocity.y);
 
         if (moveInput != 0)
         {
@@ -293,49 +307,58 @@ theRB.velocity = new Vector2(moveInput * speed, theRB.velocity.y);
 // -----------------------
 // CROUCH INPUT
 // -----------------------
-bool downKey  = Input.GetKey(KeyCode.S)     || Input.GetKey(KeyCode.DownArrow);
-bool downDown = Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow);
-bool downUp   = Input.GetKeyUp(KeyCode.S)   || Input.GetKeyUp(KeyCode.DownArrow);
+float vert = Input.GetAxisRaw("Vertical");
+bool isAxisPressed = vert < -0.1f; // Is the stick currently pushed down?
+
+// 2. Define Down, Held, and Up behavior
+bool downKey  = Input.GetKey(KeyCode.S)     || isAxisPressed;
+bool downDown = Input.GetKeyDown(KeyCode.S) || (isAxisPressed && !lastFrameDown);
+bool downUp   = Input.GetKeyUp(KeyCode.S)   || (!isAxisPressed && lastFrameDown);
+
+// 3. Update lastFrameDown at the VERY END of Update()
+// (Do this after all your movement logic is processed)
+lastFrameDown = isAxisPressed;
 
 if (isOnGround && !isDashing)
 {
+    // INITIAL PRESS
     if (downDown)
     {
         downWasPressed = true;
         downHeldTimer = 0f;
     }
 
+    // WHILE HOLDING
     if (downKey && downWasPressed)
+    {
         downHeldTimer += Time.deltaTime;
 
-    // HOLD
-    if (downKey && downWasPressed && downHeldTimer >= tapThreshold)
-    {
-        if (!isCrouching)
+        if (downHeldTimer >= tapThreshold && !isCrouching)
         {
             isCrouching = true;
             anim.SetBool("isCrouching", true);
         }
     }
 
-    // Soltou
+    // RELEASE
     if (downUp && downWasPressed)
     {
         if (downHeldTimer < tapThreshold)
         {
-            // TAP: toca uma vez via trigger
+            // TAP
             anim.SetTrigger("crouchTap");
         }
         
-        // Em ambos os casos, sai do crouch
-        isCrouching = false;
-        anim.SetBool("isCrouching", false);
-        downWasPressed = false;
-        downHeldTimer = 0f;
-        anim.speed = 1f;
+        ResetCrouch();
     }
 }
-else
+else if (isCrouching || downWasPressed)
+{
+    ResetCrouch();
+}
+
+// Helper method to keep code clean
+void ResetCrouch()
 {
     isCrouching = false;
     anim.SetBool("isCrouching", false);

@@ -2,54 +2,61 @@ using UnityEngine;
 
 public class DoorController : MonoBehaviour
 {
-    public enum ExitDirection { Left, Right, Up, Down, UpRight, UpLeft, DownRight, DownLeft }
-
     [Header("Configuração da Porta")]
     public string sceneToLoad;      
     public string targetDoorID;     
     public string thisDoorID;       
 
-    [Header("Direção da Saída")]
-    public ExitDirection exitDirection = ExitDirection.Right;
-    public float distancePath = 1.5f; // Distância da porta
+    [Header("Spawn")]
+    [Tooltip("Coloque um GameObject filho posicionado no chão onde o player deve aparecer")]
+    public Transform exitPoint;
+
+    public enum FacingDirection { Left, Right }
+    [Tooltip("Para qual direção o player olha ao entrar por esta porta")]
+    public FacingDirection playerFacing = FacingDirection.Right;
 
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Player"))
         {
             if (RoomTransitionManager.instance != null)
-            {
                 RoomTransitionManager.instance.TransitionToRoom(sceneToLoad, targetDoorID);
-            }
         }
+
     }
 
     public Vector3 GetSpawnPosition()
     {
-        Vector3 offset = Vector3.zero;
+        if (exitPoint != null)
+            return exitPoint.position;
 
-        // Calcula o offset baseado na direção escolhida
-        switch (exitDirection)
-        {
-            case ExitDirection.Left:  offset = Vector3.left * distancePath; break;
-            case ExitDirection.Right: offset = Vector3.right * distancePath; break;
-            case ExitDirection.Up:    offset = Vector3.up * distancePath; break;
-            case ExitDirection.Down:  offset = Vector3.down * distancePath; break;
-            case ExitDirection.UpRight: offset = (Vector3.up + Vector3.right).normalized * distancePath; break;
-            case ExitDirection.UpLeft: offset = (Vector3.up + Vector3.left).normalized * distancePath; break;
-            case ExitDirection.DownRight: offset = (Vector3.down + Vector3.right).normalized * distancePath; break;
-            case ExitDirection.DownLeft: offset = (Vector3.down + Vector3.left).normalized * distancePath; break;
-        }
-
-        return transform.position + offset;
+        // Fallback: mesma posição da porta (avisa no editor)
+        Debug.LogWarning($"[DoorController] '{thisDoorID}' sem exitPoint definido! Usando posição da porta.");
+        return transform.position;
     }
 
-    // Desenha uma seta no Editor para você ver para onde o player vai sair
+    public float GetFacingX()
+    {
+        return playerFacing == FacingDirection.Right ? 1f : -1f;
+    }
+
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.green;
-        Vector3 spawnPos = GetSpawnPosition();
-        Gizmos.DrawWireSphere(spawnPos, 0.3f);
-        Gizmos.DrawLine(transform.position, spawnPos);
+        if (exitPoint != null)
+        {
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireSphere(exitPoint.position, 0.3f);
+            Gizmos.DrawLine(transform.position, exitPoint.position);
+
+            // Desenha seta indicando facing
+            Gizmos.color = Color.blue;
+            Vector3 dir = playerFacing == FacingDirection.Right ? Vector3.right : Vector3.left;
+            Gizmos.DrawLine(exitPoint.position, exitPoint.position + dir * 0.5f);
+        }
+        else
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(transform.position, 0.3f);
+        }
     }
 }

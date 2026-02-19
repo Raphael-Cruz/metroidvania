@@ -74235,6 +74235,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &798441767
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 798441768}
+  m_Layer: 0
+  m_Name: exitPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &798441768
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 798441767}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -4.57, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1253163467}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &864431373
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -74389,6 +74420,37 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damageAmount: 10
+--- !u!1 &1167019918
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1167019919}
+  m_Layer: 0
+  m_Name: exitPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1167019919
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1167019918}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1.65, y: 0.07, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6487972885036785193}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1240520684
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -74478,6 +74540,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 168886378}
+  - {fileID: 798441768}
   m_Father: {fileID: 6041451412383416147}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1253163468
@@ -74495,8 +74558,8 @@ MonoBehaviour:
   sceneToLoad: Wave Hook Unlock Room
   targetDoorID: 2
   thisDoorID: 1
-  exitDirection: 3
-  distancePath: 5
+  exitPoint: {fileID: 798441768}
+  playerFacing: 0
 --- !u!61 &1253163469
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -76302,8 +76365,8 @@ MonoBehaviour:
   sceneToLoad: Scene 3
   targetDoorID: 5
   thisDoorID: 2
-  exitDirection: 1
-  distancePath: 3
+  exitPoint: {fileID: 1167019919}
+  playerFacing: 1
 --- !u!4 &415329636319307750
 Transform:
   m_ObjectHideFlags: 0
@@ -76440,7 +76503,7 @@ Transform:
   m_GameObject: {fileID: 3477037035598086234}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 104.67772, y: -26.3163, z: -22.312489}
+  m_LocalPosition: {x: 104.67773, y: -26.3163, z: -22.312489}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -77020,7 +77083,7 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.79725754, y: -0.30460125}
+  m_Offset: {x: -1.8535855, y: 0.6672392}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -77031,7 +77094,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 1.7221749, y: 3.2548752}
+  m_Size: {x: 3.1306205, y: 5.1985564}
   m_EdgeRadius: 0
 --- !u!4 &4901284982346155548
 Transform:
@@ -77244,6 +77307,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3111063977911890329}
+  - {fileID: 1167019919}
   m_Father: {fileID: 6041451412383416147}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!66 &6603457415486543242

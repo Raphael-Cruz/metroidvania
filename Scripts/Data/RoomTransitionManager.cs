@@ -43,7 +43,7 @@ public class RoomTransitionManager : MonoBehaviour
         yield return new WaitForSeconds(fadeDuration);
 
         yield return SceneManager.LoadSceneAsync(sceneName);
-        yield return null; // garante Awake/Start
+        yield return null;
 
         DoorController targetDoor = null;
         foreach (var door in FindObjectsOfType<DoorController>())
@@ -57,31 +57,50 @@ public class RoomTransitionManager : MonoBehaviour
 
         player = FindObjectOfType<PlayerMovement>();
 
-        if (player != null && targetDoor != null)
-        {
-            Vector3 spawnPos = targetDoor.GetSpawnPosition();
+       if (player != null && targetDoor != null)
+{
+    Vector3 spawnPos = targetDoor.GetSpawnPosition();
 
-           
-            if (IsNaN(spawnPos))
-            {
-                Debug.LogError("SpawnPosition contém NaN!");
-                yield break;
-            }
+    if (IsNaN(spawnPos))
+    {
+        Debug.LogError("SpawnPosition contém NaN!");
+        yield break;
+    }
 
-            SetupCinemachine(player, spawnPos);
+    Rigidbody2D rb = player.GetComponent<Rigidbody2D>();
+    if (rb != null)
+    {
+        rb.velocity = Vector2.zero;
+        rb.constraints = RigidbodyConstraints2D.FreezeAll;
+        rb.simulated = false;
+    }
 
-            // Move o player DEPOIS de avisar a câmera
-            player.transform.position = spawnPos;
+    SetupCinemachine(player, spawnPos);
+    player.transform.position = spawnPos;
+    player.GetComponent<PlayerMovement>()?.SetInitialDirection(targetDoor.GetFacingX());
 
-            Debug.Log($"Player movido para porta {targetDoorID}");
-        }
+    // Snap para o chão via raycast
+    RaycastHit2D hit = Physics2D.Raycast(spawnPos, Vector2.down, 5f, LayerMask.GetMask("Ground"));
+    if (hit.collider != null)
+    {
+        // 1.2f = Ajusta posição Y para exatamente em cima do chão
+        
+        player.transform.position = new Vector3(spawnPos.x, hit.point.y + 1.2f, spawnPos.z);
+    }
+
+    yield return new WaitForFixedUpdate();
+
+    if (rb != null)
+    {
+        rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+        rb.simulated = true;
+    }
+}
         else
         {
             if (targetDoor == null)
                 Debug.LogError($"Door ID '{targetDoorID}' não encontrada!");
         }
-
-        yield return new WaitForFixedUpdate();
 
         if (UIController.instance != null)
             UIController.instance.StartFadeFromBlack();
@@ -103,9 +122,7 @@ public class RoomTransitionManager : MonoBehaviour
         Vector3 delta = targetPos - player.transform.position;
 
         if (!IsNaN(delta))
-        {
             vcam.OnTargetObjectWarped(player.transform, delta);
-        }
     }
 
     private bool IsNaN(Vector3 v)

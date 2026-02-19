@@ -10,7 +10,7 @@ public class UIController : MonoBehaviour
 
     [Header("Fade Settings")]
     public Image fadeScreen;
-    public float fadeSpeed = 2f;
+    public float fadeSpeed = 20f;
     private bool fadingToBlack, fadingFromBlack;
 
     [Header("Save Notification")]
