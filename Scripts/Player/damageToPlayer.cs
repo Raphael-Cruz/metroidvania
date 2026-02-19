@@ -7,7 +7,7 @@ public class damageToPlayer : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D other)
     {
         // Check global invincibility
-        if (HealthManager.instance != null && HealthManager.instance.isInvincible)
+        if (HealthManager.instance != null && HealthManager.instance.isInvulnerable)
             return;
 
         if (other.gameObject.CompareTag("Player"))
@@ -25,7 +25,7 @@ public class damageToPlayer : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D other)
     {
         // Check global invincibility
-        if (HealthManager.instance != null && HealthManager.instance.isInvincible)
+        if (HealthManager.instance != null && HealthManager.instance.isInvulnerable)
             return;
 
         if (other.CompareTag("Player"))

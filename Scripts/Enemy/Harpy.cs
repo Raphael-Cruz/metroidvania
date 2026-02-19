@@ -74,7 +74,7 @@ public class Harpy : MonoBehaviour
 
     private void HandleIdle(float dist)
     {
-        anim.SetBool("isChasing", false);
+    
         anim.SetBool("isAttacking", false);
 
         if (dist <= chaseRange)
@@ -125,7 +125,7 @@ public class Harpy : MonoBehaviour
 
     private void HandleCooldown(float dist)
     {
-        anim.SetBool("isChasing", false);
+      
         anim.SetBool("isAttacking", false);
 
         cooldownTimer -= Time.deltaTime;
@@ -149,7 +149,7 @@ public class Harpy : MonoBehaviour
         // Lock in dash direction at moment of attack
         dashDirection = ((Vector2)player.position - (Vector2)transform.position).normalized;
 
-        anim.SetBool("isChasing", false);
+     
         anim.SetBool("isAttacking", true);
         hasDamagedThisAttack = false;
         SetState(State.Dashing);

@@ -11,12 +11,13 @@ public class HealthManager : MonoBehaviour
     public int maxHealth = 8;
     public int currentHealth;
 
-    public bool isInvincible = false;
-    public float invincibleTime = 2f;
+    public bool isInvulnerable = false;
+    public float invulnerableTime = 2f;
+
 
     [HideInInspector] 
     public HealthBarFlashing currentUIFlash;
-    public bool isInvulnerable; 
+
 
     private void Awake()
     {
@@ -56,9 +57,12 @@ public class HealthManager : MonoBehaviour
 
         if (currentHealth <= 0)
         {
-            RespawnController.instance.Respawn();
+          RespawnController.instance.Respawn();
         }
     }
+
+
+
 
     public void UpgradeMaxHealth(int amount)
     {
@@ -91,16 +95,16 @@ public class HealthManager : MonoBehaviour
             currentUIFlash.SetLowHealthState(false);
     }
 
-    public void TriggerInvincibility()
-    {
-        StopAllCoroutines();
-        StartCoroutine(InvincibilityCo());
-    }
+  public void TriggerInvincibility()
+{
+    StopCoroutine(nameof(InvincibilityCo));
+    StartCoroutine(InvincibilityCo());
+}
 
-    private IEnumerator InvincibilityCo()
-    {
-        isInvincible = true;
-        yield return new WaitForSeconds(invincibleTime);
-        isInvincible = false;
-    }
+private IEnumerator InvincibilityCo()
+{
+    isInvulnerable = true;
+    yield return new WaitForSeconds(invulnerableTime);
+    isInvulnerable = false;
+}
 }

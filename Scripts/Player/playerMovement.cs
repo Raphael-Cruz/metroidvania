@@ -69,6 +69,15 @@ public class PlayerMovement : MonoBehaviour
     public Color afterImageColor;
     private float afterImageCounter;
 
+[Header("Crouch")]
+public Transform kneeShotPoint;
+private bool isCrouching;
+private bool crouchTap;
+private bool crouchAnimPlayed;
+private float downHeldTimer;
+private bool downWasPressed;
+private const float tapThreshold = 0.15f;
+
     [Header("Shooting")]
     public bulletController shotToFire;
     public Transform shotPoint;
@@ -203,6 +212,7 @@ private void OnDrawGizmos()
 private void Update()
 {
 
+
   if (BossBattleState.IsInTransition)
     {
         Debug.Log("Freezing Battle State");
@@ -268,8 +278,8 @@ private void Update()
         // -----------------------
         // MOVEMENT
         // -----------------------
-        float moveInput = canMove ? Input.GetAxisRaw("Horizontal") : 0f;
-        theRB.velocity = new Vector2(moveInput * speed, theRB.velocity.y);
+        float moveInput = (canMove && !isCrouching) ? Input.GetAxisRaw("Horizontal") : 0f;
+theRB.velocity = new Vector2(moveInput * speed, theRB.velocity.y);
 
         if (moveInput != 0)
         {
@@ -279,21 +289,81 @@ private void Update()
            
         }
 
+        
+// -----------------------
+// CROUCH INPUT
+// -----------------------
+bool downKey  = Input.GetKey(KeyCode.S)     || Input.GetKey(KeyCode.DownArrow);
+bool downDown = Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.DownArrow);
+bool downUp   = Input.GetKeyUp(KeyCode.S)   || Input.GetKeyUp(KeyCode.DownArrow);
 
-        // -----------------------
-        // SHOOTING
-        // -----------------------
-        if (Input.GetButtonDown("Fire1"))
+if (isOnGround && !isDashing)
+{
+    if (downDown)
+    {
+        downWasPressed = true;
+        downHeldTimer = 0f;
+    }
+
+    if (downKey && downWasPressed)
+        downHeldTimer += Time.deltaTime;
+
+    // HOLD
+    if (downKey && downWasPressed && downHeldTimer >= tapThreshold)
+    {
+        if (!isCrouching)
         {
-            bulletController newBullet = Instantiate(shotToFire, shotPoint.position, shotPoint.rotation);
-            newBullet.moveDir = new Vector2(facingDirection, 0);
-            anim.SetTrigger("shotFired");
-
-            if (shotSound != null && audioSource != null)
-            {
-                audioSource.PlayOneShot(shotSound);
-            }
+            isCrouching = true;
+            anim.SetBool("isCrouching", true);
         }
+    }
+
+    // Soltou
+    if (downUp && downWasPressed)
+    {
+        if (downHeldTimer < tapThreshold)
+        {
+            // TAP: toca uma vez via trigger
+            anim.SetTrigger("crouchTap");
+        }
+        
+        // Em ambos os casos, sai do crouch
+        isCrouching = false;
+        anim.SetBool("isCrouching", false);
+        downWasPressed = false;
+        downHeldTimer = 0f;
+        anim.speed = 1f;
+    }
+}
+else
+{
+    isCrouching = false;
+    anim.SetBool("isCrouching", false);
+    downWasPressed = false;
+    downHeldTimer = 0f;
+    anim.speed = 1f;
+}
+// -----------------------
+// SHOOTING
+// -----------------------
+if (Input.GetButtonDown("Fire1"))
+{
+    if (isCrouching) // só knee_shooting se SEGURANDO
+    {
+        bulletController newBullet = Instantiate(shotToFire, kneeShotPoint.position, kneeShotPoint.rotation);
+        newBullet.moveDir = new Vector2(facingDirection, 0);
+        anim.SetTrigger("knee_shooting");
+    }
+    else
+    {
+        bulletController newBullet = Instantiate(shotToFire, shotPoint.position, shotPoint.rotation);
+        newBullet.moveDir = new Vector2(facingDirection, 0);
+        anim.SetTrigger("shotFired");
+    }
+
+    if (shotSound != null && audioSource != null)
+        audioSource.PlayOneShot(shotSound);
+}
 
 //----------------------
 // SKILLS

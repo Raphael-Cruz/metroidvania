@@ -67,7 +67,7 @@ public class YellowHarpy : MonoBehaviour
 
     private void HandleIdle(float dist)
     {
-        anim.SetBool("isChasing", false);
+       
         anim.SetBool("isAttacking", false);
 
         if (dist <= chaseRange)
@@ -98,7 +98,7 @@ public class YellowHarpy : MonoBehaviour
 
     private void HandleCooldown(float dist)
     {
-        anim.SetBool("isChasing", false);
+    
         anim.SetBool("isAttacking", false);
 
         cooldownTimer -= Time.deltaTime;
@@ -120,7 +120,6 @@ public class YellowHarpy : MonoBehaviour
 
         // Stop and play attack animation
         SetState(State.Attacking);
-        anim.SetBool("isChasing", false);
         anim.SetBool("isAttacking", true);
 
         // Brief wind-up before shooting

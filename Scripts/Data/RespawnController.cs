@@ -103,7 +103,14 @@ private IEnumerator RespawnCo()
         player.SetActive(false);
     }
 
+  yield return new WaitForSeconds(1);
+
+    if (SceneFader.instance != null)
+        yield return StartCoroutine(SceneFader.instance.FadeToBlack(1f));
+
     yield return new WaitForSeconds(waitToRespawn);
+
+    StartCoroutine(SceneFader.instance.FadeIn());
     
     // LOAD SCENE
     if (string.IsNullOrEmpty(respawnSceneName))
