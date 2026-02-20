@@ -126,6 +126,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7143953661111434168}
+  - {fileID: 6519147863959495488}
   - {fileID: 6335787733123666206}
   - {fileID: 23862028861265386}
   m_Father: {fileID: 2842148251853494504}
@@ -607,6 +608,7 @@ MonoBehaviour:
   theRB: {fileID: 3442992792706274383}
   anim: {fileID: 371013354056633249}
   speed: 15
+  isRunning: 0
   laserBeam: {fileID: 747863516539200129, guid: 34dc47329fa128c48adab7e9df17e09d, type: 3}
   laserPoint: {fileID: 7966060365574599564}
   shotSound: {fileID: 8300000, guid: 158d5160f1d623140819215ed6f74436, type: 3}
@@ -635,6 +637,7 @@ MonoBehaviour:
   kneeShotPoint: {fileID: 6335787733123666206}
   shotToFire: {fileID: 6923815738692349538, guid: 22e0e9cdd7f11e044b0f801c164c9e4f, type: 3}
   shotPoint: {fileID: 7143953661111434168}
+  runningShotPoint: {fileID: 6519147863959495488}
   shotMissile: {fileID: 9009748656477397880, guid: 1ad12c49dcb477e4ba9f65ff0fcdaaeb, type: 3}
   missileShotPoint: {fileID: 23862028861265386}
   hud: {fileID: 0}
@@ -647,6 +650,7 @@ MonoBehaviour:
     m_Bits: 16384
   checkDistance: 0.2
   hangingOffset: {x: 0, y: 0}
+  isRespawning: 0
 --- !u!82 &4933665620718583434
 AudioSource:
   m_ObjectHideFlags: 0
@@ -804,6 +808,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 2842148251853494504}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7223475281382158931
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6519147863959495488}
+  m_Layer: 6
+  m_Name: runningShotPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6519147863959495488
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7223475281382158931}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 2.15, y: 0.85, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2004196572831788470}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8619095630296840800
 GameObject:

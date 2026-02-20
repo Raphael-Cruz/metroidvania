@@ -16,6 +16,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("Movement")]
     public float speed = 4.0f;
     private int facingDirection = 1;
+    public bool isRunning;
 
     [Header("Particles")]
     public GameObject laserBeam;
@@ -81,6 +82,7 @@ private const float tapThreshold = 0.15f;
     [Header("Shooting")]
     public bulletController shotToFire;
     public Transform shotPoint;
+    public Transform runningShotPoint;
 
     [Header("Shooting the Missile")]
     public MissileController shotMissile;
@@ -289,19 +291,26 @@ else if (savedTransitionState && !isRespawning)
             return;
         }
 
-        // -----------------------
-        // MOVEMENT
-        // -----------------------
-        float moveInput = (canMove && !isCrouching) ? Input.GetAxisRaw("Horizontal") : 0f;
-        theRB.velocity = new Vector2(moveInput * speed, theRB.velocity.y);
+      // -----------------------
+// MOVEMENT & RUNNING
+// -----------------------
 
-        if (moveInput != 0)
-        {
-            facingDirection = moveInput > 0 ? 1 : -1;
-            visual.localScale = new Vector3(facingDirection, 1, 1);
 
-           
-        }
+float moveInput = (canMove && !isCrouching) ? Input.GetAxisRaw("Horizontal") : 0f;
+theRB.velocity = new Vector2(moveInput * speed, theRB.velocity.y);
+
+// Detect Running State
+isRunning = Mathf.Abs(moveInput) > 0.1f;
+
+if (isRunning)
+{
+    isRunning = true;
+    // Update facing direction
+    facingDirection = moveInput > 0 ? 1 : -1;
+    visual.localScale = new Vector3(facingDirection, 1, 1);
+}
+
+
 
         
 // -----------------------
@@ -315,7 +324,7 @@ bool downKey  = Input.GetKey(KeyCode.S)     || isAxisPressed;
 bool downDown = Input.GetKeyDown(KeyCode.S) || (isAxisPressed && !lastFrameDown);
 bool downUp   = Input.GetKeyUp(KeyCode.S)   || (!isAxisPressed && lastFrameDown);
 
-// 3. Update lastFrameDown at the VERY END of Update()
+
 // (Do this after all your movement logic is processed)
 lastFrameDown = isAxisPressed;
 
@@ -357,7 +366,7 @@ else if (isCrouching || downWasPressed)
     ResetCrouch();
 }
 
-// Helper method to keep code clean
+
 void ResetCrouch()
 {
     isCrouching = false;
@@ -366,28 +375,82 @@ void ResetCrouch()
     downHeldTimer = 0f;
     anim.speed = 1f;
 }
+
+
+
 // -----------------------
-// SHOOTING
+// ANGLED AIM LOGIC 
+// -----------------------
+
+float ltAxis = Input.GetAxis("LeftTrigger"); 
+bool isAimingUp = ltAxis > 0.1f || Input.GetKey(KeyCode.LeftShift);
+
+
+if (isAimingUp && isOnGround && !isDashing)
+{
+    anim.SetBool("isAimingUp", true);
+
+
+    // (Isso assume que sua animação de "angled_shooting" ou "aim_up" está ativa)
+    if (!Input.GetButton("Fire1")) 
+    {
+        // Opcional: Você pode forçar o frame 0 se quiser precisão absoluta
+        // anim.Play("AngledAimState", 0, 0f); 
+        anim.speed = 0f;
+    }
+    else 
+    {
+        // Se estiver atirando, a velocidade volta ao normal para a animação rodar
+        anim.speed = 1f;
+    }
+}
+else
+{
+    // Se soltou o LT ou não está no chão
+    if (anim.GetBool("isAimingUp"))
+    {
+        anim.SetBool("isAimingUp", false);
+        anim.speed = 1f; // Reseta a velocidade para o Idle/Run rodarem
+    }
+}
+
+// -----------------------
+// SHOOTING LOGIC 
 // -----------------------
 if (Input.GetButtonDown("Fire1"))
 {
-    if (isCrouching) // só knee_shooting se SEGURANDO
+    Vector2 shootDir;
+    Transform spawnPoint;
+    string triggerName;
+
+    if (isAimingUp)
     {
-        bulletController newBullet = Instantiate(shotToFire, kneeShotPoint.position, kneeShotPoint.rotation);
-        newBullet.moveDir = new Vector2(facingDirection, 0);
-        anim.SetTrigger("knee_shooting");
+        spawnPoint = shotPoint; 
+        shootDir = new Vector2(facingDirection, 1).normalized;
+        triggerName = "angled_shooting";
+        anim.speed = 1f; // Garante que a animação rode ao disparar
+    }
+    else if (isCrouching)
+    {
+        spawnPoint = kneeShotPoint;
+        shootDir = new Vector2(facingDirection, 0);
+        triggerName = "knee_shooting";
     }
     else
     {
-        bulletController newBullet = Instantiate(shotToFire, shotPoint.position, shotPoint.rotation);
-        newBullet.moveDir = new Vector2(facingDirection, 0);
-        anim.SetTrigger("shotFired");
+        spawnPoint = isRunning ? runningShotPoint : shotPoint;
+        shootDir = new Vector2(facingDirection, 0);
+        triggerName = "shotFired";
     }
+
+    // Spawn e Som
+    bulletController newBullet = Instantiate(shotToFire, spawnPoint.position, spawnPoint.rotation);
+    newBullet.moveDir = shootDir;
+    anim.SetTrigger(triggerName);
 
     if (shotSound != null && audioSource != null)
         audioSource.PlayOneShot(shotSound);
 }
-
 //----------------------
 // SKILLS
 //----------------------
