@@ -50,7 +50,7 @@ public class CyberPig : MonoBehaviour
     [Header("Animation Timing Overrides")]
     [SerializeField] private float swingAnimDuration = 0f; // 0 = auto-detect
     [SerializeField] private float lungeAnimDuration = 0f;
-    [SerializeField] private float dashAnimDuration = 0f;
+ 
     [SerializeField] private float circleSkillCastDuration = 0.8f; // You had this hardcoded
     #endregion
 

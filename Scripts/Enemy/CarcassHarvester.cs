@@ -26,6 +26,26 @@ public class CarcassHarvester : MonoBehaviour
     private bool isAttacking = false;
     private GameObject carcassBallTemplate;
 
+    public bool carcassIsAlive = true;
+
+    public GameObject EnergyWind;
+
+
+    public static CarcassHarvester instance { get; private set; }
+
+    private void Awake()
+    {
+        if (instance == null)
+        {
+            instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
     // -------------------------------------------------------
     void Start()
     {
@@ -49,7 +69,9 @@ public class CarcassHarvester : MonoBehaviour
         if (detectionCenter == null) detectionCenter = transform;
         if (animator == null) animator = GetComponent<Animator>();
 
-        // Idle é o estado default do Animator, nenhuma chamada necessária
+     EnemyHealthController healthController = GetComponent<EnemyHealthController>();
+if (healthController != null)
+    healthController.onDeathCallback = (hc) => OnDeath();
     }
 
     // -------------------------------------------------------
@@ -184,4 +206,20 @@ public class CarcassHarvester : MonoBehaviour
         Gizmos.color = new Color(1f, 0.4f, 0f, 1f);
         Gizmos.DrawWireCube(Vector3.zero, attackBoxSize);
     }
+
+void OnDeath()
+{
+    carcassIsAlive = false;
+    EnergyWind.SetActive(false);
+
+   
+    foreach (var entangler in FindObjectsByType<Entangler>(FindObjectsSortMode.None))
+    {
+        EnemyHealthController hc = entangler.GetComponent<EnemyHealthController>();
+        if (hc != null)
+            hc.isInvulnerable = false;
+    }
+
+  GetComponent<EnemyHealthController>().PerformDefaultDeath();
+}
 }

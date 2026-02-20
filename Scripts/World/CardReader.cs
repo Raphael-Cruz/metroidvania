@@ -8,7 +8,7 @@ public class CardReader : MonoBehaviour
 
     [Header("Settings")]
     [SerializeField] private string requiredRelicID = "AccessCard";
-    [SerializeField] private KeyCode interactKey = KeyCode.E;
+ 
 
     private bool playerInside = false;
     private bool isUsed = false;

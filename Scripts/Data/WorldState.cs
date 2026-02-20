@@ -8,6 +8,7 @@ public static class WorldState
     public static HashSet<string> UnlockedSkills = new HashSet<string>();
     public static HashSet<string> PermanentDeadEnemies = new HashSet<string>();
     public static HashSet<string> CompletedEvents = new HashSet<string>();
+    public static HashSet<string> PermanentCollectedItems = new HashSet<string>();
 
     public static void ApplyAbilitiesToPlayer(PlayerAbilityTracker player)
     {
@@ -49,5 +50,6 @@ public static class WorldState
         UnlockedSkills  = new HashSet<string>(data.collectedSkills);
         PermanentDeadEnemies = new HashSet<string>(data.permanentDeadEnemies);
         CompletedEvents = new HashSet<string>(data.completedEvents);
+        PermanentCollectedItems = new HashSet<string>(data.permanentCollectedItems);
     }
 }
